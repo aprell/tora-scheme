@@ -1,7 +1,7 @@
 tora-scheme
 ===========
 
-tora is a tiny Lisp/Scheme plaything.
+A tiny Lisp/Scheme plaything
 
 Usage
 -----
@@ -30,9 +30,9 @@ So far tora has:
 - Special forms: `if`, `cond`, `begin`, `define`, `set!`, `lambda`, `quote`
 - Built-in functions and predicates, including `+`, `-`, `*`, `/`, `=`, `<`,
   `<=`, `>`, `>=`, `list`, `cons`, `car`, `cdr`, `number?`, `boolean?`,
-  `string?`, `symbol?`, `null?`, `pair?`, `list?`, equal?`
-- A small collection of functions written in tora, including `map`, `filter`,
-  and `fold`s.
+  `string?`, `symbol?`, `null?`, `pair?`, `list?`, `equal?`
+- A small collection of functions written in Scheme, including `map`,
+  `filter`, and `fold`.
 
 Enter the REPL and hit `:b` for a list of all defined symbols in the global
 environment.
@@ -50,7 +50,7 @@ TODO
 References
 ----------
 
-[CSE 341 -- Scheme Basics](http://courses.cs.washington.edu/courses/cse341/03wi/scheme/basics.html)
-[(How to Write a (Lisp) Interpreter (in Python))](http://norvig.com/lispy.html)
-[Lisp as the Maxwell's equations of software](http://www.michaelnielsen.org/ddi/lisp-as-the-maxwells-equations-of-software)
-[Make a Lisp](https://github.com/kanaka/mal/blob/master/process/guide.md)
+- [CSE 341 -- Scheme Basics](http://courses.cs.washington.edu/courses/cse341/03wi/scheme/basics.html)
+- [(How to Write a (Lisp) Interpreter (in Python))](http://norvig.com/lispy.html)
+- [Lisp as the Maxwell's equations of software](http://www.michaelnielsen.org/ddi/lisp-as-the-maxwells-equations-of-software)
+- [Make a Lisp](https://github.com/kanaka/mal/blob/master/process/guide.md)
