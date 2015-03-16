@@ -23,7 +23,7 @@ local TOKENS = {
 	rparen   = "%)",
 	quote    = "'",
 	operator = "([%+%-%*/=<>]+) ",
-    symbol   = "[_%a][_%-%w]*%p?",
+	symbol   = "[_%a][_%-%w]*%p?",
 }
 
 local function next_token(inp)
