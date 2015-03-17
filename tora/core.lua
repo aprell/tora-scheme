@@ -24,6 +24,7 @@ local TOKENS = {
 	quote    = "'",
 	operator = "([%+%-%*/=<>]+) ",
 	symbol   = "[_%a][_%-%w]*%p?",
+	lambda   = "λ",
 }
 
 local function next_token(inp)
@@ -104,7 +105,7 @@ parse = function (tokens)
 			for _, a in ipairs(parse_define(tokens)) do
 				ast[#ast+1] = a
 			end
-		else -- number, string, boolean, operator, symbol
+		else -- number, string, boolean, operator, symbol, lambda
 			ast[#ast+1] = val
 		end
 	end
@@ -175,7 +176,7 @@ eval_list = function (x, env)
 		x = slice(x, 2):map(function (exp) return eval(exp, env) end)
 		-- 2) Return value of last expression
 		return x[#x]
-	elseif x[1] == "lambda" then
+	elseif x[1] == "lambda" or x[1] == "λ" then
 		return function (...)
 			local params, body = x[2], x[3]
 			local args = {...}
