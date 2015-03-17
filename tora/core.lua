@@ -74,6 +74,23 @@ local function parse_quote(tokens)
 	return ast
 end
 
+local function parse_define(tokens)
+	local ast = {"define"}
+	local tok, val = tokens()
+	-- Allows operators to be redefined!
+	if tok == "operator" or tok == "symbol" then
+		ast[#ast+1] = val
+		return ast
+	end
+	assert(tok == "lparen")
+	ast[#ast+1] = select(2, tokens())
+	local lam = {"lambda", parse(tokens)}
+	tok, val = tokens()
+	lam[#lam+1] = tok == "lparen" and parse(tokens) or val
+	ast[#ast+1] = lam
+	return ast
+end
+
 -- Parse token stream into AST
 parse = function (tokens)
 	local ast = {}
@@ -83,6 +100,10 @@ parse = function (tokens)
 		if tok == "lparen" then ast[#ast+1] = parse(tokens)
 		elseif tok == "rparen" then return ast
 		elseif tok == "quote" then ast[#ast+1] = parse_quote(tokens)
+		elseif tok == "symbol" and val == "define" then
+			for _, a in ipairs(parse_define(tokens)) do
+				ast[#ast+1] = a
+			end
 		else -- number, string, boolean, operator, symbol
 			ast[#ast+1] = val
 		end

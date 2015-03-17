@@ -18,9 +18,7 @@
   (define y (+ x 1))
   (print (+ x y)))
 
-(define times42
-  (lambda (x)
-	(* x 42)))
+(define (times42 x) (* x 42))
 
 (begin
   (define x 1)
@@ -34,13 +32,12 @@
 (if (> 1 2)
   (print "Huh?!"))
 
-(define rating
-  (lambda (x)
-	(cond ((and (> x 0) (<= x 2)) "bad")
-		  ((= x 3) "okay")
-		  ((= x 4) "good")
-		  ((= x 5) "perfect")
-		  (else    "invalid"))))
+(define (rating x)
+  (cond ((and (> x 0) (<= x 2)) "bad")
+        ((= x 3) "okay")
+        ((= x 4) "good")
+        ((= x 5) "perfect")
+        (else    "invalid")))
 
 (print (rating -3))
 (print (rating 1))
