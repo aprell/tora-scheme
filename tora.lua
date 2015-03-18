@@ -42,7 +42,13 @@ end
 local function main(...)
 	local args = {...}
 	if #args > 0 then
-		eval(read([[(load "]] .. args[1] .. [[")]]))
+		if args[1] == "-l" then
+			assert(args[2], "This option requires a file")
+			eval(read([[(load "]] .. args[2] .. [[")]]))
+			repl()
+		else
+			eval(read([[(load "]] .. args[1] .. [[")]]))
+		end
 	else
 		repl()
 	end
