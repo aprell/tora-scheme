@@ -21,6 +21,14 @@ or interpret the contents of a file
 ./tora.lua example.scm
 ```
 
+Loading a file with `-l` brings the definitions into scope:
+
+```
+./tora.lua -l tora/prelude.scm
+λ> (sum '(1 2 3))
+6
+```
+
 Language Features
 -----------------
 
@@ -32,7 +40,7 @@ So far tora has:
   `<=`, `>`, `>=`, `list`, `cons`, `car`, `cdr`, `number?`, `boolean?`,
   `string?`, `symbol?`, `null?`, `pair?`, `list?`, `equal?`
 - A small collection of functions written in Scheme, including `map`,
-  `filter`, and `fold`.
+  `filter`, and `fold`
 
 Enter the REPL and hit `:b` for a list of all defined symbols in the global
 environment.
