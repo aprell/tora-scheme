@@ -54,6 +54,9 @@ for sym, val in pairs {
 	["pair?"]    = function (a) return type(a) == "table" and #a ~= 0 or false end,
 	["equal?"]   = equal,
 
+	["even?"]    = function (a) return a % 2 == 0 end,
+	["odd?"]     = function (a) return a % 2 ~= 0 end,
+
 } do Env.add(builtin, sym, val) end
 
 return builtin
