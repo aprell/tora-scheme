@@ -99,7 +99,6 @@ parse = function (tokens)
 	local ast = {}
 	setmetatable(ast, {__index = util})
 	for tok, val in tokens do
-		if tok == "error" then error("Invalid token: " .. val) end
 		if tok == "lparen" then ast[#ast+1] = parse(tokens)
 		elseif tok == "rparen" then return ast
 		elseif tok == "quote" then ast[#ast+1] = parse_quote(tokens)
