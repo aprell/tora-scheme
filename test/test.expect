@@ -108,3 +108,7 @@ nil
 
 300
 400
+(lambda () #t)
+(lambda () #f)
+(define a (lambda () (quote b)))
+(define a (lambda (x y) (quote (b))))

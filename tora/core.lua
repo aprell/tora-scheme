@@ -87,7 +87,9 @@ local function parse_define(tokens)
 	ast[#ast+1] = select(2, tokens())
 	local lam = {"lambda", parse(tokens)}
 	tok, val = tokens()
-	lam[#lam+1] = tok == "lparen" and parse(tokens) or val
+	if tok == "lparen" then lam[#lam+1] = parse(tokens)
+	elseif tok == "quote" then lam[#lam+1] = parse_quote(tokens)
+	else lam[#lam+1] = val end
 	ast[#ast+1] = lam
 	return ast
 end

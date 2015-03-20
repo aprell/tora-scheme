@@ -155,3 +155,8 @@
 
 (define y '(* (length (list 'quoted 'list)) 200))
 (print (eval y))
+
+(print (read "(lambda () #t)"))
+(print (read "(lambda () #f)"))
+(print (read "(define (a) 'b)"))
+(print (read "(define (a x y) '(b))"))
