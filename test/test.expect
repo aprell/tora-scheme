@@ -16,6 +16,14 @@ bad
 okay
 perfect
 
+(1 2 3)
+(1 2)
+(1 2 1)
+(1 2 3)
+(bar foo)
+(bar bar)
+#t
+
 3
 1
 20

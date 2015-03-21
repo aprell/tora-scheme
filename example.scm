@@ -40,3 +40,25 @@
     (c3)
     (c3)
     (if (= (c3) 0) "Boom!")))
+
+;; ---------------------------------------------------------------------------
+
+(define (plus x y)
+  (let ((+ (lambda (x y)
+             (if (and (list? x) (list? y))
+                 (append x y)
+                 (+ x y)))))
+    (+ x y)))
+
+(print (cons (plus 1 2) (plus '(4) '(5))))
+
+(print
+    (letrec ((is-even?
+               (lambda (n)
+                 (if (= n 0) #t
+                     (is-odd? (- n 1)))))
+             (is-odd?
+               (lambda (n)
+                 (if (= n 0) #f
+                     (is-even? (- n 1))))))
+      (is-even? 42)))

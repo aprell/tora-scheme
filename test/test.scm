@@ -45,6 +45,59 @@
 (print (rating 5))
 (newline)
 
+(print
+  (let ((a 1)
+        (b 2)
+        (c 3))
+    (list a b c)))
+
+(print
+  (let ((a 1)
+        (b 2)
+        (c a)) ; no runtime error, evaluates to nil
+    (list a b c)))
+
+(print
+  (let ((a 1)
+        (b 2))
+    (let ((c a))
+      (list a b c))))
+
+(print
+  (letrec ((a 1)
+           (b (+ a 1))
+           (c (+ b 1)))
+    (list a b c)))
+
+(print
+  (let ((a "foo")
+        (b "bar"))
+    (let ((a b)
+          (b a))
+      (list a b))))
+
+(print
+  (letrec ((a "foo")
+           (b "bar"))
+    (letrec ((a b)
+             (b a))
+      (list a b))))
+
+(print
+  (let ((xs
+          (let ((xs (list "a")))
+            (let ((xs (cons "b" xs)))
+              (let ((xs (cons "c" xs)))
+                xs))))
+        (ys
+          (letrec ((ys (list "a"))
+                   (ys (cons "b" ys))
+                   (ys (cons "c" ys)))
+            ys)))
+    (equal? xs ys)))
+
+(newline)
+
 ;; Built-ins
 
 (print (+ 1 2))

@@ -177,6 +177,18 @@ eval_list = function (x, env)
 		x = slice(x, 2):map(function (exp) return eval(exp, env) end)
 		-- 2) Return value of last expression
 		return x[#x]
+	elseif x[1] == "let" or x[1] == "letrec" then
+		local binds, body = x[2], x[3]
+		local scope = Env.new(env)
+		for i = 1, #binds do
+			local id, exp = binds[i][1], binds[i][2]
+			if x[1] == "let" then
+				Env.add(scope, id, eval(exp, env))
+			else -- letrec
+				Env.add(scope, id, eval(exp, scope))
+			end
+		end
+		return eval(body, scope)
 	elseif x[1] == "lambda" or x[1] == "λ" then
 		return function (...)
 			local params, body = x[2], x[3]
