@@ -71,3 +71,14 @@
 
 (define flip (lambda (fn)
   (lambda (a b) (fn b a))))
+
+(define (range start end step)
+  (letrec ((up (lambda (start end step)
+                 (if (> start end) '()
+                     (cons start (up (+ start step) end step)))))
+           (down (lambda (start end step)
+                   (if (< start end) '()
+                       (cons start (down (+ start step) end step))))))
+    (cond ((and (<= start end) (> step 0)) (up start end step))
+          ((and (>= start end) (< step 0)) (down start end step))
+          (else '()))))
