@@ -53,12 +53,12 @@
 (print (cons (plus 1 2) (plus '(4) '(5))))
 
 (print
-    (letrec ((is-even?
-               (lambda (n)
-                 (if (= n 0) #t
-                     (is-odd? (- n 1)))))
-             (is-odd?
-               (lambda (n)
-                 (if (= n 0) #f
-                     (is-even? (- n 1))))))
-      (is-even? 42)))
+  (letrec ((is-even?
+             (lambda (n)
+               (if (= n 0) #t
+                   (is-odd? (- n 1)))))
+           (is-odd?
+             (lambda (n)
+               (if (= n 0) #f
+                 (is-even? (- n 1))))))
+    (is-even? 42)))
