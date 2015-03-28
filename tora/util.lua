@@ -7,6 +7,8 @@ function util.map(t, fn)
 	for _, v in ipairs(t) do
 		table.insert(m, (fn(v)))
 	end
+	-- Keep quasiquotation depth if present
+	m.depth = t.depth
 	return setmetatable(m, getmetatable(t))
 end
 
