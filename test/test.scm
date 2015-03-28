@@ -8,9 +8,6 @@
 (print #t)
 (print #f)
 (print foo)
-(print 'foo)
-(print '(f o o))
-(print (quote (1 2 3)))
 (newline)
 
 (begin
@@ -96,6 +93,39 @@
             ys)))
     (equal? xs ys)))
 
+(newline)
+
+;; quote/quasiquote
+
+(print '1.23)
+(print '#t)
+(print 'foo)
+(print '(quote foo))
+(print '(f o o))
+(print '(1 2 '(3 4 5)))
+(newline)
+
+(print `1.23)
+(print `#t)
+(print `foo)
+(print `(quasiquote foo))
+(print `(f o o))
+(print `(1 2 `(3 4 5)))
+(newline)
+
+(print (= 'a `a))
+(print (= 'a `,a))
+(print (equal? '(1 2 3) `(1 2 3)))
+(print (equal? '(1 2 (+ 1 2)) `(1 2 (+ 1 2))))
+(print (equal? (list 1 2 (+ 1 2)) `(1 2 ,(+ 1 2))))
+(newline)
+
+(print `(1 2 ,@(list 3 4) 5))
+(print `(a 1 2 ,(+ 1 2) ,@(list 4 5) b))
+(print (let ((x 3)) `(x has the value ,x)))
+(print (letrec ((x '(3 4 5)) (y `(1 2 ,@x))) `(length of y is ,(length y))))
+(print `(1 `,(+ 1 ,(+ 2 3)) 4))
+(print `(1 ```,,@,,@(list (+ 1 2)) 4))
 (newline)
 
 ;; Built-ins
@@ -210,6 +240,6 @@
 (print (eval y))
 
 (print (read "(lambda () #t)"))
-(print (read "(lambda () #f)"))
+(print (read "(lambda () '#f)"))
 (print (read "(define (a) 'b)"))
 (print (read "(define (a x y) '(b))"))

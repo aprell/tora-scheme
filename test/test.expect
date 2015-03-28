@@ -3,10 +3,9 @@
 3.141592654
 -2.71828
 Hello Scheme!
+#t
+#f
 nil
-foo
-(f o o)
-(1 2 3)
 
 3
 42
@@ -23,6 +22,33 @@ perfect
 (bar foo)
 (bar bar)
 #t
+
+1.23
+#t
+foo
+(quote foo)
+(f o o)
+(1 2 (quote (3 4 5)))
+
+1.23
+#t
+foo
+(quasiquote foo)
+(f o o)
+(1 2 (quasiquote (3 4 5)))
+
+#t
+#f
+#t
+#t
+#t
+
+(1 2 3 4 5)
+(a 1 2 3 4 5 b)
+(x has the value 3)
+(length of y is 5)
+(1 (quasiquote (unquote (+ 1 5))) 4)
+(1 (quasiquote (quasiquote (quasiquote (unquote (unquote-splicing (unquote 3)))))) 4)
 
 3
 1
@@ -117,6 +143,6 @@ nil
 300
 400
 (lambda () #t)
-(lambda () #f)
+(lambda () (quote #f))
 (define a (lambda () (quote b)))
 (define a (lambda (x y) (quote (b))))

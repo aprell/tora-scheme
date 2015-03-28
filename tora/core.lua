@@ -2,6 +2,7 @@ local builtin = require "builtin"
 local Env = require "env"
 local util = require "util"
 local map, slice = util.map, util.slice
+local mt = {__index = util}
 
 local function core_tostring(a)
 	if type(a) == "table" then
@@ -16,15 +17,18 @@ local function core_tostring(a)
 end
 
 local TOKENS = {
-	number   = "[%+%-]?%d+%.*%d*",
-	string   = "\".-\"",
-	boolean  = "#[tf]",
-	lparen   = "%(",
-	rparen   = "%)",
-	quote    = "'",
-	operator = "([%+%-%*/=<>]+) ",
-	symbol   = "[_%a][_%-%w]*%p?",
-	lambda   = "λ",
+	["number"]           = "[%+%-]?%d+%.*%d*",
+	["string"]           = "\".-\"",
+	["boolean"]          = "#[tf]",
+	["lparen"]           = "%(",
+	["rparen"]           = "%)",
+	["quote"]            = "'",
+	["quasiquote"]       = "`",
+	["unquote"]          = ",[^@]",
+	["unquote-splicing"] = ",@",
+	["operator"]         = "([%+%-%*/=<>]+) ",
+	["symbol"]           = "[_%a][_%-%w]*%p?",
+	["lambda"]           = "λ",
 }
 
 local function next_token(inp)
@@ -34,11 +38,12 @@ local function next_token(inp)
 	for tok, pat in pairs(TOKENS) do
 		local val = inp:match("^"..pat)
 		if val ~= nil then
+			if tok == "unquote" then val = "," end
 			return tok, val, inp:sub(#val+1)
 		end
 	end
 	if #inp == 0 then return "<end>" end
-	error("next_token: unknown token")
+	error("next_token: unknown token\n" .. inp .. "\n^")
 end
 
 -- Tokenizer coroutine
@@ -46,8 +51,8 @@ local function tokenize(inp)
 	return coroutine.wrap(function ()
 		-- 1) Strip comments
 		inp = inp:gsub(";.-\n", "")
-		-- 2) Surround parentheses and quotations with spaces
-		inp = inp:gsub("[%(%)']", " %0 ")
+		-- 2) Surround parentheses with spaces
+		inp = inp:gsub("[%(%)]", " %0 ")
 		-- 3) Get tokens
 		local tok, val, rest = next_token(inp)
 		while tok ~= "<end>" do
@@ -62,52 +67,63 @@ end
 
 local parse
 
-local function parse_quote(tokens)
-	local ast = {"quote"}
-	-- Get next token
-	local tok, val = tokens()
-	if tok == "operator" or tok == "symbol" then
-		ast[#ast+1] = val
-		return ast
+local function parse_quote(quote, tokens, depth)
+	local ast = setmetatable({quote}, mt)
+	if quote == "quasiquote" then
+		depth = (depth or 0) + 1
+		ast.depth = depth
+	elseif quote:match("unquote") then
+		assert(depth > 0, "parse_quote: unquote outside of quasiquote")
+		depth = depth - 1
+		ast.depth = depth
 	end
-	assert(tok == "lparen")
-	ast[#ast+1] = parse(tokens)
+	local tok, val = tokens()
+	if tok == "lparen" then ast[#ast+1] = parse(tokens, depth)
+	elseif tok:match("quote") then ast[#ast+1] = parse_quote(tok, tokens, depth)
+	else ast[#ast+1] = val end
 	return ast
 end
 
 local function parse_define(tokens)
-	local ast = {"define"}
+	local ast = setmetatable({"define"}, mt)
 	local tok, val = tokens()
 	-- Allows operators to be redefined!
 	if tok == "operator" or tok == "symbol" then
 		ast[#ast+1] = val
 		return ast
 	end
-	assert(tok == "lparen")
+	assert(tok == "lparen", "parse_define: unexpected " .. tok)
 	ast[#ast+1] = select(2, tokens())
-	local lam = {"lambda", parse(tokens)}
+	local lam = setmetatable({"lambda", parse(tokens)}, mt)
 	tok, val = tokens()
 	if tok == "lparen" then lam[#lam+1] = parse(tokens)
-	elseif tok == "quote" then lam[#lam+1] = parse_quote(tokens)
+	elseif tok:match("quote") then lam[#lam+1] = parse_quote(tok, tokens)
 	else lam[#lam+1] = val end
 	ast[#ast+1] = lam
 	return ast
 end
 
 -- Parse token stream into AST
-parse = function (tokens)
-	local ast = {}
-	setmetatable(ast, {__index = util})
+parse = function (tokens, depth)
+	local ast = setmetatable({}, mt)
 	for tok, val in tokens do
-		if tok == "lparen" then ast[#ast+1] = parse(tokens)
+		if tok == "lparen" then ast[#ast+1] = parse(tokens, depth)
 		elseif tok == "rparen" then return ast
-		elseif tok == "quote" then ast[#ast+1] = parse_quote(tokens)
+		elseif tok:match("quote") then ast[#ast+1] = parse_quote(tok, tokens, depth)
 		elseif tok == "symbol" and val == "define" then
 			for _, a in ipairs(parse_define(tokens)) do
 				ast[#ast+1] = a
 			end
 		else -- number, string, boolean, operator, symbol, lambda
 			ast[#ast+1] = val
+			if tok == "symbol" and val == "quasiquote" then
+				depth = (depth or 0) + 1;
+				ast.depth = depth
+			elseif tok == "symbol" and val:match("unquote") then
+				assert(depth > 0, "parse: unquote outside of quasiquote")
+				depth = depth - 1
+				ast.depth = depth
+			end
 		end
 	end
 	return ast
@@ -133,6 +149,36 @@ local function eval(exp, env)
 	end
 end
 
+-- Evaluate expression exp if it appears unquoted at the same nesting level as
+-- the outermost quasiquote
+local function eval_unquote(exp, env)
+	if type(exp) ~= "table" then return exp end
+	if exp[1] == "unquote" and exp.depth == 0 then
+		-- unquote is limited to one argument
+		return eval(exp[2], env)
+	elseif exp[1] == "unquote-splicing" and exp.depth == 0 then
+		-- Evaluate now, splice later
+		return builtin.cons("@", eval(exp[2], env))
+	end
+	return exp:map(function (exp) return eval_unquote(exp, env) end)
+end
+
+local function splice(l)
+	if type(l) ~= "table" then return l end
+	local s = setmetatable({}, getmetatable(l))
+	for i = 1, #l do
+		assert(l[i] ~= "@", "splice: no list to splice into")
+		if type(l[i]) == "table" and l[i][1] == "@" then
+			for j = 2, #l[i] do
+				s[#s+1] = splice(l[i][j])
+			end
+		else
+			s[#s+1] = splice(l[i])
+		end
+	end
+	return s
+end
+
 -- Evaluate atom a in environment env
 eval_atom = function (a, env)
 	if not symbol(a) then return a end
@@ -144,6 +190,8 @@ end
 eval_list = function (x, env)
 	if x[1] == "quote" then
 		return x[2]
+	elseif x[1] == "quasiquote" then
+		return splice(eval_unquote(x[2], env))
 	elseif x[1] == "define" then
 		local var, val = x[2], eval(x[3], env)
 		Env.add(env, var, val)
