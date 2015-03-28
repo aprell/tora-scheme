@@ -36,7 +36,8 @@ So far tora has:
 - Simple data types (mapped to host language): numbers, booleans,
   strings, symbols, lists
 - Special forms: `if`, `cond`, `begin`, `define`, `let`, `letrec`, `set!`,
-  `lambda`, `quote`
+  `lambda`, `quote` (`'`), `quasiquote` (`` ` ``), `unquote` (`,`),
+  `unquote-splicing` (`,@`)
 - Built-in functions and predicates, including `+`, `-`, `*`, `/`, `=`, `<`,
   `<=`, `>`, `>=`, `list`, `cons`, `car`, `cdr`, `number?`, `boolean?`,
   `string?`, `symbol?`, `null?`, `pair?`, `list?`, `equal?`
@@ -50,7 +51,8 @@ TODO
 ----
 
 - [x] `let` bindings
-- [ ] Quasiquotation
+- [x] Quasiquotation
+- [ ] Basic macros
 - [ ] Error handling
 - [ ] String functions
 - [ ] N-ary operators
@@ -63,4 +65,5 @@ References
 - [CSE 341 -- Scheme Basics](http://courses.cs.washington.edu/courses/cse341/03wi/scheme/basics.html)
 - [(How to Write a (Lisp) Interpreter (in Python))](http://norvig.com/lispy.html)
 - [Lisp as the Maxwell's equations of software](http://www.michaelnielsen.org/ddi/lisp-as-the-maxwells-equations-of-software)
+- [Quasiquotation in Lisp](http://repository.readscheme.org/ftp/papers/pepm99/bawden.pdf)
 - [Make a Lisp](https://github.com/kanaka/mal/blob/master/process/guide.md)
