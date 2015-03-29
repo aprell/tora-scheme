@@ -10,6 +10,8 @@ diff --old-line-format="F" --new-line-format="" --unchanged-line-format="." \
      __test__.expect __test__.out
 ]]
 
+core.eval(core.read([[(load "tora/macro.scm")]]))
+
 local tests = {"test/test"}
 for i = 1, #tests do
 	local test = tests[i]

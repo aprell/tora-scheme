@@ -40,6 +40,7 @@ local function repl(prompt)
 end
 
 local function main(...)
+	eval(read([[(load "tora/macro.scm")]]))
 	local args = {...}
 	if #args > 0 then
 		if args[1] == "-l" then

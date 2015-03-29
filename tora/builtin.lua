@@ -29,10 +29,7 @@ for sym, val in pairs {
 	[">="]       = function (a, b) return a >= b end,
 	["<="]       = function (a, b) return a <= b end,
 
-	["and"]      = function (a, b) if a then return b else return a end end,
-	["or"]       = function (a, b) if a then return a else return b end end,
 	["not"]      = function (a) return not a end,
-	["else"]     = true, -- else-clause is always true
 
 	["newline"]  = function ( ) io.write("\n") end,
 	["nl"]       = "\n",
