@@ -84,8 +84,8 @@ local function parse_quote(quote, tokens, depth)
 	return ast
 end
 
-local function parse_define(tokens)
-	local ast = setmetatable({"define"}, mt)
+local function parse_define(define, tokens)
+	local ast = setmetatable({define}, mt)
 	local tok, val = tokens()
 	-- Allows operators to be redefined!
 	if tok == "operator" or tok == "symbol" then
@@ -103,6 +103,8 @@ local function parse_define(tokens)
 	return ast
 end
 
+local expand_macro
+
 -- Parse token stream into AST
 parse = function (tokens, depth)
 	local ast = setmetatable({}, mt)
@@ -110,8 +112,8 @@ parse = function (tokens, depth)
 		if tok == "lparen" then ast[#ast+1] = parse(tokens, depth)
 		elseif tok == "rparen" then return ast
 		elseif tok:match("quote") then ast[#ast+1] = parse_quote(tok, tokens, depth)
-		elseif tok == "symbol" and val == "define" then
-			for _, a in ipairs(parse_define(tokens)) do
+		elseif tok == "symbol" and val:match("define") then
+			for _, a in ipairs(parse_define(val, tokens)) do
 				ast[#ast+1] = a
 			end
 		else -- number, string, boolean, operator, symbol, lambda
@@ -126,7 +128,7 @@ parse = function (tokens, depth)
 			end
 		end
 	end
-	return ast
+	return ast:map(expand_macro)
 end
 
 local function read(inp)
@@ -135,6 +137,24 @@ end
 
 local function symbol(x)
 	return type(x) == "string" and not x:find("^\"")
+end
+
+-- Macros live in a separate environment
+local macro = Env.new()
+
+local function macrocall(x)
+	return symbol(x) and Env.lookup(macro, x) ~= nil
+end
+
+-- Recursively expand macros in ast
+expand_macro = function (ast)
+	if type(ast) ~= "table" then return ast end
+	if macrocall(ast[1]) then
+		local macro, args = Env.lookup(macro, ast[1]), slice(ast, 2)
+		return macro(unpack(expand_macro(args)))
+	else
+		return ast:map(expand_macro)
+	end
 end
 
 local eval_atom, eval_list
@@ -192,9 +212,13 @@ eval_list = function (x, env)
 		return x[2]
 	elseif x[1] == "quasiquote" then
 		return splice(eval_unquote(x[2], env))
-	elseif x[1] == "define" then
+	elseif x[1] == "define" or x[1] == "define-macro" then
 		local var, val = x[2], eval(x[3], env)
-		Env.add(env, var, val)
+		if x[1] == "define" then
+			Env.add(env, var, val)
+		else -- define-macro
+			Env.add(macro, var, val)
+		end
 		return var .. ": " .. core_tostring(val)
 	elseif x[1] == "set!" then
 		local var, val = x[2], eval(x[3], env)
@@ -256,6 +280,7 @@ eval_list = function (x, env)
 			return eval(body, scope)
 		end
 	else -- Treat as function call
+		if macrocall(x[1]) then error("Unexpanded macro") end
 		-- 1) Evaluate arguments
 		x = x:map(function (exp) return eval(exp, env) end)
 		-- 2) Apply function to arguments
