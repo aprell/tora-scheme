@@ -35,9 +35,9 @@ Language Features
 So far tora has:
 - Simple data types (mapped to host language): numbers, booleans,
   strings, symbols, lists
-- Special forms: `if`, `cond`, `begin`, `define`, `let`, `letrec`, `set!`,
-  `lambda`, `quote` (`'`), `quasiquote` (`` ` ``), `unquote` (`,`),
-  `unquote-splicing` (`,@`)
+- Special forms: `if`, `cond`, `begin`, `define`, `define-macro`, `let`,
+  `letrec`, `set!`, `lambda`, `quote` (`'`), `quasiquote` (`` ` ``), `unquote`
+  (`,`), `unquote-splicing` (`,@`)
 - Built-in functions and predicates, including `+`, `-`, `*`, `/`, `=`, `<`,
   `<=`, `>`, `>=`, `list`, `cons`, `car`, `cdr`, `number?`, `boolean?`,
   `string?`, `symbol?`, `null?`, `pair?`, `list?`, `equal?`
@@ -52,7 +52,7 @@ TODO
 
 - [x] `let` bindings
 - [x] Quasiquotation
-- [ ] Basic macros
+- [x] Basic macros
 - [ ] Error handling
 - [ ] String functions
 - [ ] N-ary operators
