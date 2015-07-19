@@ -1,7 +1,7 @@
 local builtin = require "builtin"
 local Env = require "env"
 local util = require "util"
-local map, slice = util.map, util.slice
+local map, slice, raise = util.map, util.slice, util.raise
 local mt = {__index = util}
 
 local function core_tostring(a)
@@ -43,7 +43,7 @@ local function next_token(inp)
 		end
 	end
 	if #inp == 0 then return "<end>" end
-	error("next_token: unknown token\n" .. inp .. "\n^")
+	raise("next_token: failed to match -->" .. inp)
 end
 
 -- Tokenizer coroutine
@@ -223,14 +223,14 @@ eval_list = function (x, env)
 	elseif x[1] == "set!" then
 		local var, val = x[2], eval(x[3], env)
 		if not Env.update(env, var, val) then
-			error("set! of undefined variable " .. var)
+			raise("eval: set! of undefined variable " .. var)
 		end
 		return var .. ": " .. core_tostring(val)
 	elseif x[1] == "cond" then
 		for i = 2, #x do
 			local test_x, then_x = x[i][1], x[i][2]
 			if test_x == "else" and i ~= #x then
-				error("else must be the last cond-clause")
+				raise("eval: else must be last cond-clause")
 			end
 			if eval(test_x, env) == true then
 				return eval(then_x, env)
@@ -266,9 +266,11 @@ eval_list = function (x, env)
 			local params, body = x[2], x[3]
 			local args = {...}
 			local scope = Env.new(env)
-			assert(type(params) == "table")
+			if type(params) ~= "table" then
+				raise("eval: missing parameter list")
+			end
 			if #args ~= #params then
-				error("Number of arguments doesn't match number of formal parameters")
+				raise("eval: number of arguments doesn't match number of formal parameters")
 			end
 			-- 1) Bind parameters to values
 			-- Note that arguments behave like local variables
@@ -280,7 +282,7 @@ eval_list = function (x, env)
 			return eval(body, scope)
 		end
 	else -- Treat as function call
-		if macrocall(x[1]) then error("Unexpanded macro") end
+		if macrocall(x[1]) then raise("eval: unexpanded macro") end
 		-- 1) Evaluate arguments
 		x = x:map(function (exp) return eval(exp, env) end)
 		-- 2) Apply function to arguments

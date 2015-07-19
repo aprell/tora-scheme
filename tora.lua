@@ -34,7 +34,10 @@ local function repl(prompt)
 		local inp = io.read()
 		if not inp then io.write("\n"); break end
 		if inp:find("^:") then cmds[inp](); goto continue end
-		if #inp > 0 then println(eval(read(inp))) end
+		if #inp > 0 then
+			local ok, err = pcall(function () println(eval(read(inp))) end)
+			if not ok then print(err) end
+		end
 		::continue::
 	end
 end

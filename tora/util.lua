@@ -28,4 +28,10 @@ function util.slice(t, i, j)
 	return setmetatable(slice, getmetatable(t))
 end
 
+-- Raises an error with message err_msg
+function util.raise(err_msg)
+	local err_mt = {__tostring = function (err) return err.reason end}
+	return error(setmetatable({reason = err_msg}, err_mt))
+end
+
 return util
