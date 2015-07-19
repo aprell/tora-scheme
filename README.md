@@ -53,10 +53,8 @@ TODO
 - [x] `let` bindings
 - [x] Quasiquotation
 - [x] Basic macros
-- [ ] Error handling
 - [ ] String functions
 - [ ] N-ary operators
-- [ ] Nicer REPL
 - [ ] ...
 
 References
