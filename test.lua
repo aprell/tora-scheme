@@ -1,9 +1,7 @@
 #!/usr/bin/env lua
 
-package.path = package.path .. ";tora/?.lua"
-
-local core = require "core"
-local Env = require "env"
+local core = require "tora.core"
+local Env = require "tora.env"
 
 local diff = [[
 diff --old-line-format="F" --new-line-format="" --unchanged-line-format="." \

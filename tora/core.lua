@@ -1,6 +1,6 @@
-local builtin = require "builtin"
-local Env = require "env"
-local util = require "util"
+local builtin = require "tora.builtin"
+local Env = require "tora.env"
+local util = require "tora.util"
 local map, slice, raise = util.map, util.slice, util.raise
 local mt = {__index = util}
 

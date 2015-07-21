@@ -1,8 +1,6 @@
 #!/usr/bin/env lua
 
-package.path = package.path .. ";tora/?.lua"
-
-local core = require "core"
+local core = require "tora.core"
 local read, eval, println = core.read, core.eval, core.println
 
 local usage = [[

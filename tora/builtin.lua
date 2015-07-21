@@ -1,5 +1,5 @@
-local Env = require "env"
-local util = require "util"
+local Env = require "tora.env"
+local util = require "tora.util"
 local slice = util.slice
 
 local function equal(a, b)
