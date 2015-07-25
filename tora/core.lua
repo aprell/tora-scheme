@@ -216,10 +216,11 @@ eval_list = function (x, env)
 		local var, val = x[2], eval(x[3], env)
 		if x[1] == "define" then
 			Env.add(env, var, val)
+			return var .. ": " .. core_tostring(val)
 		else -- define-macro
 			Env.add(macro, var, val)
+			return var .. ": " .. core_tostring(val):gsub("function", "macro")
 		end
-		return var .. ": " .. core_tostring(val)
 	elseif x[1] == "set!" then
 		local var, val = x[2], eval(x[3], env)
 		if not Env.update(env, var, val) then
