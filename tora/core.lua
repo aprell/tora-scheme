@@ -223,7 +223,8 @@ eval_list = function (x, env)
 	elseif x[1] == "set!" then
 		local var, val = x[2], eval(x[3], env)
 		if not Env.update(env, var, val) then
-			raise("eval: set! of undefined variable " .. var)
+			raise("eval: set! of undefined variable " ..
+			      string.format("'%s'", core_tostring(var)))
 		end
 		return var .. ": " .. core_tostring(val)
 	elseif x[1] == "cond" then
@@ -282,7 +283,14 @@ eval_list = function (x, env)
 			return eval(body, scope)
 		end
 	else -- Treat as function call
-		if macrocall(x[1]) then raise("eval: unexpanded macro") end
+		if macrocall(x[1]) then
+			raise("eval: unexpanded macro " ..
+			      string.format("'%s'", core_tostring(x[1])))
+		end
+		if Env.lookup(env, x[1]) == nil then
+			raise("eval: undefined function " ..
+			      string.format("'%s'", core_tostring(x[1])))
+		end
 		-- 1) Evaluate arguments
 		x = x:map(function (exp) return eval(exp, env) end)
 		-- 2) Apply function to arguments
