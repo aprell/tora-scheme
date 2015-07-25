@@ -173,6 +173,9 @@ end
 -- the outermost quasiquote
 local function eval_unquote(exp, env)
 	if type(exp) ~= "table" then return exp end
+	if exp[1] == "unquote" then
+		assert(exp.depth ~= nil, "eval_unquote: missing depth")
+	end
 	if exp[1] == "unquote" and exp.depth == 0 then
 		-- unquote is limited to one argument
 		return eval(exp[2], env)
@@ -186,6 +189,8 @@ end
 local function splice(l)
 	if type(l) ~= "table" then return l end
 	local s = setmetatable({}, getmetatable(l))
+	-- Keep quasiquotation depth if present
+	s.depth = l.depth
 	for i = 1, #l do
 		assert(l[i] ~= "@", "splice: no list to splice into")
 		if type(l[i]) == "table" and l[i][1] == "@" then
