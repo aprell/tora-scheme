@@ -293,14 +293,15 @@ eval_list = function (x, env)
 			raise("eval: unexpanded macro " ..
 			      string.format("'%s'", core_tostring(x[1])))
 		end
-		if Env.lookup(env, x[1]) == nil then
+		-- 1) Evaluate function
+		local fn = eval(x[1], env)
+		if fn == nil then
 			raise("eval: undefined function " ..
 			      string.format("'%s'", core_tostring(x[1])))
 		end
-		-- 1) Evaluate arguments
-		x = x:map(function (exp) return eval(exp, env) end)
-		-- 2) Apply function to arguments
-		local fn, args = x[1], slice(x, 2)
+		-- 2) Evaluate arguments
+		local args = slice(x, 2):map(function (exp) return eval(exp, env) end)
+		-- 3) Apply function to arguments
 		return fn(unpack(args))
 	end
 end
