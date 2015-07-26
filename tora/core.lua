@@ -298,6 +298,9 @@ eval_list = function (x, env)
 		if fn == nil then
 			raise("eval: undefined function " ..
 			      string.format("'%s'", core_tostring(x[1])))
+		elseif type(fn) ~= "function" then
+			raise("eval: attempt to call " ..
+			      string.format("'%s' (a %s value)", core_tostring(x[1]), type(x[1])))
 		end
 		-- 2) Evaluate arguments
 		local args = slice(x, 2):map(function (exp) return eval(exp, env) end)
