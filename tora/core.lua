@@ -151,7 +151,7 @@ expand_macro = function (ast)
 	if type(ast) ~= "table" then return ast end
 	if macrocall(ast[1]) then
 		local macro, args = Env.lookup(macro, ast[1]), slice(ast, 2)
-		return macro(unpack(expand_macro(args)))
+		return expand_macro(macro(unpack(expand_macro(args))))
 	else
 		return ast:map(expand_macro)
 	end
