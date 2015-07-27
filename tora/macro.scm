@@ -8,3 +8,9 @@
 
 (define-macro (else x)
   `(#t ,x)) ; else-clause is always true
+
+(define-macro (when test then)
+  `(if ,test ,then))
+
+(define-macro (unless test then)
+  `(when (not ,test) ,then))
