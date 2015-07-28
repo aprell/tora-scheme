@@ -62,3 +62,19 @@
                (if (= n 0) #f
                  (is-even? (- n 1))))))
     (is-even? 42)))
+
+;; ---------------------------------------------------------------------------
+
+(let= loop ((i 0)
+            (l '()))
+  (if (<= i 10)
+      (loop (+ i 1) (cons (fib i) l))
+      (print l)))
+
+(define (sum-list lst)
+  (let= loop ((acc 0)
+              (l lst))
+    (cond ((null? l) acc)
+          (else (loop (+ acc (car l)) (cdr l))))))
+
+(print (sum-list (range 1 100 1)))

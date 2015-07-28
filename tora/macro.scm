@@ -14,3 +14,12 @@
 
 (define-macro (unless test then)
   `(when (not ,test) ,then))
+
+;; Named let defined in terms of letrec and lambda
+(define-macro (let= name bindings body)
+  (letrec ((cadr (lambda (lst) (car (cdr lst))))
+           (map (lambda (fn lst)
+                  (if (null? lst) '()
+                      (cons (fn (car lst)) (map fn (cdr lst)))))))
+    `(letrec ((,name (lambda ,(map car bindings) ,body)))
+       (,name ,@(map cadr bindings)))))

@@ -1,6 +1,7 @@
 local Env = require "tora.env"
 local util = require "tora.util"
 local slice = util.slice
+local mt = {__index = util}
 
 local function equal(a, b)
 	if type(a) == "table" and type(b) == "table" then
@@ -34,8 +35,8 @@ for sym, val in pairs {
 	["newline"]  = function ( ) io.write("\n") end,
 	["nl"]       = "\n",
 
-	["list"]     = function (...) return {...} end,
-	["cons"]     = function (x, xs) return {x, unpack(xs)} end,
+	["list"]     = function (...) return setmetatable({...}, mt) end,
+	["cons"]     = function (x, xs) return setmetatable({x, unpack(xs)}, mt) end,
 	["car"]      = function (xs) return xs[1] end,
 	["cdr"]      = function (xs) return slice(xs, 2) end,
 	["length"]   = function (xs) return #xs end,
