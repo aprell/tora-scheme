@@ -2,7 +2,10 @@ local builtin = require "tora.builtin"
 local Env = require "tora.env"
 local util = require "tora.util"
 local map, slice, raise = util.map, util.slice, util.raise
-local mt = {__index = util}
+
+local lpeg = require "lpeg"
+local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
+local C, Cc, Ct = lpeg.C, lpeg.Cc, lpeg.Ct
 
 local function core_tostring(a)
 	if type(a) == "table" then
@@ -16,123 +19,66 @@ local function core_tostring(a)
 	end
 end
 
-local TOKENS = {
-	["number"]           = "[%+%-]?%d+%.*%d*",
-	["string"]           = "\".-\"",
-	["boolean"]          = "#[tf]",
-	["lparen"]           = "%(",
-	["rparen"]           = "%)",
-	["quote"]            = "'",
-	["quasiquote"]       = "`",
-	["unquote"]          = ",[^@]",
-	["unquote-splicing"] = ",@",
-	["operator"]         = "([%+%-%*/=<>]+) ",
-	["symbol"]           = "[_%a][_%-%w]*%p?",
-	["lambda"]           = "λ",
-}
-
-local function next_token(inp)
-	-- Skip whitespace
-	inp = inp:gsub("^%s*", "")
-	-- Identify next token
-	for tok, pat in pairs(TOKENS) do
-		local val = inp:match("^"..pat)
-		if val ~= nil then
-			if tok == "unquote" then val = "," end
-			return tok, val, inp:sub(#val+1)
-		end
-	end
-	if #inp == 0 then return "<end>" end
-	raise("next_token: failed to match -->" .. inp)
-end
-
--- Tokenizer coroutine
-local function tokenize(inp)
-	return coroutine.wrap(function ()
-		-- 1) Strip comments
-		inp = inp:gsub(";.-\n", "")
-		-- 2) Surround parentheses with spaces
-		inp = inp:gsub("[%(%)]", " %0 ")
-		-- 3) Get tokens
-		local tok, val, rest = next_token(inp)
-		while tok ~= "<end>" do
-			if tok == "number" or tok == "boolean" then
-				val = tonumber(val) or val == "#t"
-			end
-			coroutine.yield(tok, val)
-			tok, val, rest = next_token(rest)
-		end
-	end)
-end
-
-local parse
-
-local function parse_quote(quote, tokens, depth)
-	local ast = setmetatable({quote}, mt)
-	if quote == "quasiquote" then
-		depth = (depth or 0) + 1
-		ast.depth = depth
-	elseif quote:match("unquote") then
-		assert(depth > 0, "parse_quote: unquote outside of quasiquote")
-		depth = depth - 1
-		ast.depth = depth
-	end
-	local tok, val = tokens()
-	if tok == "lparen" then ast[#ast+1] = parse(tokens, depth)
-	elseif tok:match("quote") then ast[#ast+1] = parse_quote(tok, tokens, depth)
-	else ast[#ast+1] = val end
-	return ast
-end
-
-local function parse_define(define, tokens)
-	local ast = setmetatable({define}, mt)
-	local tok, val = tokens()
-	-- Allows operators to be redefined!
-	if tok == "operator" or tok == "symbol" then
-		ast[#ast+1] = val
-		return ast
-	end
-	assert(tok == "lparen", "parse_define: unexpected " .. tok)
-	ast[#ast+1] = select(2, tokens())
-	local lam = setmetatable({"lambda", parse(tokens)}, mt)
-	tok, val = tokens()
-	if tok == "lparen" then lam[#lam+1] = parse(tokens)
-	elseif tok:match("quote") then lam[#lam+1] = parse_quote(tok, tokens)
-	else lam[#lam+1] = val end
-	ast[#ast+1] = lam
-	return ast
-end
-
 local expand_macro
 
--- Parse token stream into AST
-parse = function (tokens, depth)
-	local ast = setmetatable({}, mt)
-	for tok, val in tokens do
-		if tok == "lparen" then ast[#ast+1] = parse(tokens, depth)
-		elseif tok == "rparen" then return ast
-		elseif tok:match("quote") then ast[#ast+1] = parse_quote(tok, tokens, depth)
-		elseif tok == "symbol" and val:match("define") then
-			for _, a in ipairs(parse_define(val, tokens)) do
-				ast[#ast+1] = a
-			end
-		else -- number, string, boolean, operator, symbol, lambda
-			ast[#ast+1] = val
-			if tok == "symbol" and val == "quasiquote" then
-				depth = (depth or 0) + 1;
-				ast.depth = depth
-			elseif tok == "symbol" and val:match("unquote") then
-				assert(depth > 0, "parse: unquote outside of quasiquote")
-				depth = depth - 1
-				ast.depth = depth
-			end
-		end
-	end
-	return ast:map(expand_macro)
+local function parse()
+	local alpha = R ("AZ", "az")
+	local num = R "09"
+	local alphanum = alpha + num
+	local space = S " \t\n"
+	local function skip(tok) return space ^ 0 * tok * space ^ 0 end
+
+	local depth = 0
+	local function inc() depth = depth + 1; return depth end
+	local function dec() depth = depth - 1; return depth end
+
+	local mt = {__index = util}
+	local function mk(ast) return setmetatable(ast, mt) end
+
+	local number = C (S "+-" ^ -1 * num ^ 1 * (P "." * num ^ 0) ^ -1) / tonumber
+	local string = C (P '"' * (1 - P '"') ^ 0 * P '"')
+	local boolean = C (P "#" * S "tf") / function (tok) return tok == "#t" end
+	local operator = C (S "+-*/=" + S "<>" * P "=" ^ -1)
+	local ident = C ((P "_" + alpha) ^ 1 * (S "_-" + alphanum) ^ 0 * S "?!=" ^ -1)
+	local lambda = C (P "λ")
+	local symbol = ident + lambda
+
+	return P { "program",
+		program = Ct ((V "sexpr" + V "comment") ^ 0) / mk,
+		sexpr = V "atom" + V "list" + V "quote" + V "quasiquote" + V "unquote",
+		atom = number + string + boolean + operator + symbol,
+		list = Ct (skip "(" * (V "sexpr" * space ^ 0 + V "comment") ^ 0 * skip ")") /
+			function (ast)
+				if ast[1] == "define" or ast[1] == "define-macro" then
+					if type(ast[2]) == "table" then
+						-- Desugar: (define (f a b) (...))
+						----------> (define f (lambda (a b) (...)))
+						local lambda = mk {"lambda", ast[2], ast[3]}
+						ast[2] = table.remove(ast[2], 1)
+						ast[3] = lambda
+					end
+				end
+				return mk(ast)
+			end,
+		quote = Ct (skip "'" * Cc "quote" * V "sexpr") / mk,
+		quasiquote = Ct (skip "`" * Cc "quasiquote" *
+			(Cc () / inc) * V "sexpr") /
+			function (ast)
+				dec(); ast.depth = table.remove(ast, 2); return mk(ast)
+			end,
+		unquote = Ct ((skip ("," - P ",@") * Cc "unquote" +
+			skip ",@" * Cc "unquote-splicing") *
+			(Cc () / dec) * V "sexpr") /
+			function (ast)
+				if depth < 0 then raise "parse: unquote outside of quasiquote" end
+				inc(); ast.depth = table.remove(ast, 2); return mk(ast)
+			end,
+		comment = skip ";" * (1 - P "\n") ^ 0,
+	} / function (ast) return ast:map(expand_macro) end
 end
 
 local function read(inp)
-	return unpack(parse(tokenize(inp)))
+	return unpack(parse():match(inp))
 end
 
 local function symbol(x)
@@ -313,7 +259,7 @@ local function interpret(filename, env)
 	local file = assert(io.open(filename))
 	local inp = file:read("*all")
 	if #inp > 0 then
-		local code = parse(tokenize(inp))
+		local code = parse():match(inp)
 		code:map(function (exp) eval(exp, env or builtin) end)
 	end
 	file:close()
