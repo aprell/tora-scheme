@@ -57,6 +57,10 @@ local function parse()
 						ast[2] = table.remove(ast[2], 1)
 						ast[3] = lambda
 					end
+				elseif ast[1] == "lambda" or ast[1] == "λ" then
+					if type(ast[2]) ~= "table" then
+						raise "parse: lambda expects a parameter list"
+					end
 				end
 				return mk(ast)
 			end,
@@ -219,16 +223,16 @@ eval_list = function (x, env)
 			local params, body = x[2], x[3]
 			local args = {...}
 			local scope = Env.new(env)
-			if type(params) ~= "table" then
-				raise("eval: missing parameter list")
-			end
 			if #args ~= #params then
 				raise("eval: number of arguments doesn't match number of formal parameters")
 			end
 			-- 1) Bind parameters to values
 			-- Note that arguments behave like local variables
 			for i = 1, #args do
-				assert(symbol(params[i]))
+				if (not symbol(params[i])) then
+					raise(string.format("eval: cannot bind %s to '%s'",
+					      core_tostring(args[i]), core_tostring(params[i])))
+				end
 				Env.add(scope, params[i], args[i])
 			end
 			-- 2) Evaluate body of lambda in new scope
