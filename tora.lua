@@ -42,14 +42,13 @@ end
 
 local function main(...)
 	eval(read([[(load "tora/macro.scm")]]))
-	local args = {...}
-	if #args > 0 then
-		if args[1] == "-l" then
-			assert(args[2], "This option requires a file")
-			eval(read([[(load "]] .. args[2] .. [[")]]))
+	if #arg > 0 then
+		if arg[1] == "-l" then
+			assert(arg[2], "This option requires a file")
+			eval(read([[(load "]] .. arg[2] .. [[")]]))
 			repl()
 		else
-			eval(read([[(load "]] .. args[1] .. [[")]]))
+			eval(read([[(load "]] .. arg[1] .. [[")]]))
 		end
 	else
 		repl()
