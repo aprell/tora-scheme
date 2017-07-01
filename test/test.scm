@@ -245,3 +245,11 @@
 (print (read "(lambda () '#f)"))
 (print (read "(define (a) 'b)"))
 (print (read "(define (a x y) '(b))"))
+(newline)
+
+(print (string? (show 1)))
+(print (string? (show #t)))
+(print (string? (show "show")))
+(print (string? (show (+ 1 2))))
+(print (show (list 'a 'b 'c)))
+(print (show (read "(define (a x y) '(b))")))

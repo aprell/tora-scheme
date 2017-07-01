@@ -148,3 +148,10 @@ nil
 (lambda () (quote #f))
 (define a (lambda () (quote b)))
 (define a (lambda (x y) (quote (b))))
+
+#t
+#t
+#t
+#t
+(a b c)
+(define a (lambda (x y) (quote (b))))

@@ -67,6 +67,8 @@ for sym, val in pairs {
 	["even?"]    = function (a) return a % 2 == 0 end,
 	["odd?"]     = function (a) return a % 2 ~= 0 end,
 
+	["show"]     = function (a) return ("%q"):format(core_tostring(a)) end,
+
 } do Env.add(builtin, sym, val) end
 
 builtin.core = {
