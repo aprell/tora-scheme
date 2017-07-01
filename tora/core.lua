@@ -2,22 +2,11 @@ local builtin = require "tora.builtin"
 local Env = require "tora.env"
 local util = require "tora.util"
 local map, slice, raise = util.map, util.slice, util.raise
+local show = builtin.core.show
 
 local lpeg = require "lpeg"
 local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
 local C, Cc, Ct = lpeg.C, lpeg.Cc, lpeg.Ct
-
-local function core_tostring(a)
-	if type(a) == "table" then
-		return "(" .. table.concat(map(a, core_tostring), " ") .. ")"
-	elseif type(a) == "string" and a:match("^\"") then
-		return a:sub(2, -2)
-	elseif a == true or a == false then
-		return a == true and "#t" or "#f"
-	else
-		return tostring(a)
-	end
-end
 
 local expand_macro
 
@@ -171,18 +160,18 @@ eval_list = function (x, env)
 		local var, val = x[2], eval(x[3], env)
 		if x[1] == "define" then
 			Env.add(env, var, val)
-			return var .. ": " .. core_tostring(val)
+			return var .. ": " .. show(val)
 		else -- define-macro
 			Env.add(macro, var, val)
-			return var .. ": " .. core_tostring(val):gsub("function", "macro")
+			return var .. ": " .. show(val):gsub("function", "macro")
 		end
 	elseif x[1] == "set!" then
 		local var, val = x[2], eval(x[3], env)
 		if not Env.update(env, var, val) then
 			raise("eval: set! of undefined variable " ..
-			      string.format("'%s'", core_tostring(var)))
+			      string.format("'%s'", show(var)))
 		end
-		return var .. ": " .. core_tostring(val)
+		return var .. ": " .. show(val)
 	elseif x[1] == "cond" then
 		for i = 2, #x do
 			local test_x, then_x = x[i][1], x[i][2]
@@ -231,7 +220,7 @@ eval_list = function (x, env)
 			for i = 1, #args do
 				if (not symbol(params[i])) then
 					raise(string.format("eval: cannot bind %s to '%s'",
-					      core_tostring(args[i]), core_tostring(params[i])))
+					      show(args[i]), show(params[i])))
 				end
 				Env.add(scope, params[i], args[i])
 			end
@@ -241,16 +230,16 @@ eval_list = function (x, env)
 	else -- Treat as function call
 		if macrocall(x[1]) then
 			raise("eval: unexpanded macro " ..
-			      string.format("'%s'", core_tostring(x[1])))
+			      string.format("'%s'", show(x[1])))
 		end
 		-- 1) Evaluate function
 		local fn = eval(x[1], env)
 		if fn == nil then
 			raise("eval: undefined function " ..
-			      string.format("'%s'", core_tostring(x[1])))
+			      string.format("'%s'", show(x[1])))
 		elseif type(fn) ~= "function" then
 			raise("eval: attempt to call " ..
-			      string.format("'%s' (a %s value)", core_tostring(x[1]), type(x[1])))
+			      string.format("'%s' (a %s value)", show(x[1]), type(x[1])))
 		end
 		-- 2) Evaluate arguments
 		local args = slice(x, 2):map(function (exp) return eval(exp, env) end)
@@ -274,7 +263,7 @@ for sym, val in pairs {
 
 	["read"]  = function (inp) return read(inp:sub(2, -2)) end,
 	["eval"]  = eval,
-	["print"] = function (exp) io.write(core_tostring(exp), "\n") end,
+	["print"] = function (exp) io.write(show(exp), "\n") end,
 	["load"]  = function (fln) return interpret(fln:sub(2, -2)) end,
 
 } do Env.add(builtin, sym, val) end

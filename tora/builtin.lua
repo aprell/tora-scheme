@@ -1,6 +1,6 @@
 local Env = require "tora.env"
 local util = require "tora.util"
-local slice = util.slice
+local map, slice, raise = util.map, util.slice, util.raise
 local mt = {__index = util}
 
 local function equal(a, b)
@@ -12,6 +12,18 @@ local function equal(a, b)
 		return true
 	else
 		return a == b
+	end
+end
+
+local function core_tostring(a)
+	if type(a) == "table" then
+		return "(" .. table.concat(map(a, core_tostring), " ") .. ")"
+	elseif type(a) == "string" and a:match("^\"") then
+		return a:sub(2, -2)
+	elseif a == true or a == false then
+		return a == true and "#t" or "#f"
+	else
+		return tostring(a)
 	end
 end
 
@@ -56,5 +68,9 @@ for sym, val in pairs {
 	["odd?"]     = function (a) return a % 2 ~= 0 end,
 
 } do Env.add(builtin, sym, val) end
+
+builtin.core = {
+	show = core_tostring
+}
 
 return builtin
