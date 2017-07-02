@@ -69,6 +69,10 @@ for sym, val in pairs {
 
 	["show"]     = function (a) return ("%q"):format(core_tostring(a)) end,
 
+	["string-append"] = function (...)
+		return ("%q"):format(table.concat(map({...}, core_tostring)))
+	end,
+
 } do Env.add(builtin, sym, val) end
 
 builtin.core = {

@@ -155,3 +155,8 @@ nil
 #t
 (a b c)
 (define a (lambda (x y) (quote (b))))
+
+#t
+foobar
+1+2=3
+2+3=5

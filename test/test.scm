@@ -253,3 +253,9 @@
 (print (string? (show (+ 1 2))))
 (print (show (list 'a 'b 'c)))
 (print (show (read "(define (a x y) '(b))")))
+(newline)
+
+(print (string? (string-append "abc")))
+(print (string-append "foo" "bar"))
+(print (string-append (show 1) (show '+) (show 2) (show '=) (show (+ 1 2))))
+(print (string-append 2 '+ 3 '= (+ 2 3))) ; show is called implicitly
