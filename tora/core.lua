@@ -253,7 +253,13 @@ local function interpret(filename, env)
 	local inp = file:read("*all")
 	if #inp > 0 then
 		local code = parse():match(inp)
-		code:map(function (exp) eval(exp, env or builtin) end)
+		local ok, err = pcall(function ()
+			code:map(function (exp) eval(exp, env or builtin) end)
+		end)
+		if not ok then
+			print(err)
+			os.exit(1)
+		end
 	end
 	file:close()
 	return filename:gsub("%.[^%.]*$", "") .. " loaded"
