@@ -73,6 +73,8 @@ for sym, val in pairs {
 		return ("%q"):format(table.concat(map({...}, core_tostring)))
 	end,
 
+	["error"]    = function (msg) raise(msg:sub(2, -2)) end,
+
 } do Env.add(builtin, sym, val) end
 
 builtin.core = {

@@ -23,3 +23,10 @@
                       (cons (fn (car lst)) (map fn (cdr lst)))))))
     `(letrec ((,name (lambda ,(map car bindings) ,body)))
        (,name ,@(map cadr bindings)))))
+
+(define-macro (assert-equal a b)
+  `(if (not (equal? ,a ,b))
+    (let ((msg (string-append
+                 "Assertion failed: "
+                 ,(show a) " != " ,(show b) " <=> " ,a " != " ,b)))
+      (error msg))))
