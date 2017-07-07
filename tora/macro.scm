@@ -30,3 +30,9 @@
                  "Assertion failed: "
                  ,(show a) " != " ,(show b) " <=> " ,a " != " ,b)))
       (error msg))))
+
+(define-macro (assert-true a)
+  `(assert-equal ,a #t))
+
+(define-macro (assert-false a)
+  `(assert-equal ,a #f))
