@@ -167,7 +167,7 @@ eval_list = function (x, env)
 		end
 	elseif x[1] == "set!" then
 		local var, val = x[2], eval(x[3], env)
-		if not Env.update(env, var, val) then
+		if Env.update(env, var, val) == nil then
 			raise("eval: set! of undefined variable " ..
 			      string.format("'%s'", show(var)))
 		end
