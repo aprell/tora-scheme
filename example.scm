@@ -5,7 +5,9 @@
       n
       (+ (fib (- n 1)) (fib (- n 2)))))
 
-(print (map fib (range 0 10 1)))
+(assert-equal
+  (map fib (range 0 10 1))
+  '(0 1 1 2 3 5 8 13 21 34 55))
 
 ;; SICP ----------------------------------------------------------------------
 
@@ -50,9 +52,11 @@
                  (+ x y)))))
     (+ x y)))
 
-(print (cons (plus 1 2) (plus '(4) '(5))))
+(assert-equal
+  (cons (plus 1 2) (plus '(4) '(5)))
+  '(3 4 5))
 
-(print
+(define (even? n)
   (letrec ((is-even?
              (lambda (n)
                (if (= n 0) #t
@@ -60,8 +64,16 @@
            (is-odd?
              (lambda (n)
                (if (= n 0) #f
-                 (is-even? (- n 1))))))
-    (is-even? 42)))
+                   (is-even? (- n 1))))))
+    (is-even? n)))
+
+(define (odd? n)
+  (not (even? n)))
+
+(assert-true (even? 42))
+(assert-false (odd? 42))
+(assert-false (even? 43))
+(assert-true (odd? 43))
 
 ;; ---------------------------------------------------------------------------
 
@@ -69,7 +81,7 @@
             (l '()))
   (if (<= i 10)
       (loop (+ i 1) (cons (fib i) l))
-      (print l)))
+      (assert-equal l '(55 34 21 13 8 5 3 2 1 1 0))))
 
 (define (sum-list lst)
   (let= loop ((acc 0)
@@ -77,4 +89,6 @@
     (cond ((null? l) acc)
           (else (loop (+ acc (car l)) (cdr l))))))
 
-(print (sum-list (range 1 100 1)))
+(assert-equal
+  (sum-list (range 1 100 1))
+  5050)
