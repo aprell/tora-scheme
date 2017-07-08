@@ -15,9 +15,9 @@ local function equal(a, b)
 	end
 end
 
-local function core_tostring(a)
+local function show(a)
 	if type(a) == "table" then
-		return "(" .. table.concat(map(a, core_tostring), " ") .. ")"
+		return "(" .. table.concat(map(a, show), " ") .. ")"
 	elseif type(a) == "string" and a:match("^\"") then
 		return a:sub(2, -2)
 	elseif a == true or a == false then
@@ -67,10 +67,10 @@ for sym, val in pairs {
 	["even?"]    = function (a) return a % 2 == 0 end,
 	["odd?"]     = function (a) return a % 2 ~= 0 end,
 
-	["show"]     = function (a) return ("%q"):format(core_tostring(a)) end,
+	["show"]     = function (a) return ("%q"):format(show(a)) end,
 
 	["string-append"] = function (...)
-		return ("%q"):format(table.concat(map({...}, core_tostring)))
+		return ("%q"):format(table.concat(map({...}, show)))
 	end,
 
 	["error"]    = function (msg) raise(msg:sub(2, -2)) end,
@@ -78,7 +78,7 @@ for sym, val in pairs {
 } do Env.add(builtin, sym, val) end
 
 builtin.core = {
-	show = core_tostring
+	show = show
 }
 
 return builtin
