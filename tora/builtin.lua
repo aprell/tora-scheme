@@ -3,6 +3,14 @@ local util = require "tora.util"
 local map, slice, raise = util.map, util.slice, util.raise
 local mt = {__index = util}
 
+function tora_string(s)
+	return ("%q"):format(s)
+end
+
+function lua_string(s)
+	return s:sub(2, -2)
+end
+
 local function equal(a, b)
 	if type(a) == "table" and type(b) == "table" then
 		if #a ~= #b then return false end
@@ -19,7 +27,7 @@ local function show(a)
 	if type(a) == "table" then
 		return "(" .. table.concat(map(a, show), " ") .. ")"
 	elseif type(a) == "string" and a:match("^\"") then
-		return a:sub(2, -2)
+		return lua_string(a)
 	elseif a == true or a == false then
 		return a == true and "#t" or "#f"
 	else
@@ -67,13 +75,13 @@ for sym, val in pairs {
 	["even?"]    = function (a) return a % 2 == 0 end,
 	["odd?"]     = function (a) return a % 2 ~= 0 end,
 
-	["show"]     = function (a) return ("%q"):format(show(a)) end,
+	["show"]     = function (a) return tora_string(show(a)) end,
 
 	["string-append"] = function (...)
-		return ("%q"):format(table.concat(map({...}, show)))
+		return tora_string(table.concat(map({...}, show)))
 	end,
 
-	["error"]    = function (msg) raise(msg:sub(2, -2)) end,
+	["error"]    = function (msg) raise(lua_string(msg)) end,
 
 } do Env.add(builtin, sym, val) end
 

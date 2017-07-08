@@ -270,10 +270,10 @@ end
 
 for sym, val in pairs {
 
-	["read"]  = function (inp) return read(inp:sub(2, -2)) end,
+	["read"]  = function (inp) return read(lua_string(inp)) end,
 	["eval"]  = eval,
 	["print"] = function (exp) io.write(show(exp), "\n") end,
-	["load"]  = function (fln) return interpret(fln:sub(2, -2)) end,
+	["load"]  = function (fln) return interpret(lua_string(fln)) end,
 
 } do Env.add(builtin, sym, val) end
 
