@@ -8,6 +8,13 @@
 (print #t)
 (print #f)
 (print foo)
+(print foo?)
+(print foo!)
+(print foo=)
+(print foo-bar)
+(print foo/bar)
+(print foo->bar)
+(print foo->bar->baz)
 (newline)
 
 (begin

@@ -28,7 +28,7 @@ local function parse()
 	local string = C (P '"' * (1 - P '"') ^ 0 * P '"')
 	local boolean = C (P "#" * S "tf") / function (tok) return tok == "#t" end
 	local operator = C (S "+-*/=" + S "<>" * P "=" ^ -1)
-	local ident = C ((P "_" + alpha) ^ 1 * (S "_-/" + alphanum) ^ 0 * S "?!=" ^ -1)
+	local ident = C ((P "_" + alpha) ^ 1 * (S "_->/" + alphanum) ^ 0 * S "?!=" ^ -1)
 	local lambda = C (P "λ")
 	local symbol = ident + lambda
 
