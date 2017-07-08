@@ -266,3 +266,11 @@
 (print (string-append "foo" "bar"))
 (print (string-append (show 1) (show '+) (show 2) (show '=) (show (+ 1 2))))
 (print (string-append 2 '+ 3 '= (+ 2 3))) ; show is called implicitly
+(newline)
+
+(define lua "lua () return 1 end")
+(print (lua))
+(define lua "lua (a) return a + 1 end")
+(print (lua 1))
+(define lua "lua (a, b) return a + b end")
+(print (lua 1 2))

@@ -159,6 +159,9 @@ eval_list = function (x, env)
 	elseif x[1] == "define" or x[1] == "define-macro" then
 		local var, val = x[2], eval(x[3], env)
 		if x[1] == "define" then
+			if type(val) == "string" and val:match("^\"lua%s*%b()") then
+				val = load("return function" .. val:sub(2, -2):gsub("^lua", ""))()
+			end
 			Env.add(env, var, val)
 			return var .. ": " .. show(val)
 		else -- define-macro
