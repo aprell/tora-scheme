@@ -24,6 +24,9 @@
     `(letrec ((,name (lambda ,(map car bindings) ,body)))
        (,name ,@(map cadr bindings)))))
 
+(define-macro (while test body)
+  `(let= loop () (when ,test (begin ,body (loop)))))
+
 (define-macro (assert-equal a b)
   `(if (not (equal? ,a ,b))
     (let ((msg (string-append
