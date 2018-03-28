@@ -3,6 +3,7 @@ local Env = require "tora.env"
 local util = require "tora.util"
 local map, slice, raise = util.map, util.slice, util.raise
 local show = builtin.core.show
+local unpack = unpack or table.unpack
 
 local lpeg = require "lpeg"
 local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
