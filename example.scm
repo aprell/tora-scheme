@@ -92,3 +92,21 @@
 (assert-equal
   (sum-list (range 1 100 1))
   5050)
+
+;; ---------------------------------------------------------------------------
+
+(define (simplify dir lst)
+  (cond
+    ((and (equal? dir 'North) (equal? (car lst) 'South)) (cdr lst))
+    ((and (equal? dir 'South) (equal? (car lst) 'North)) (cdr lst))
+    ((and (equal? dir 'East)  (equal? (car lst) 'West))  (cdr lst))
+    ((and (equal? dir 'West)  (equal? (car lst) 'East))  (cdr lst))
+    (else (cons dir lst))))
+
+(define (directions lst)
+  (let ((simplified-list (foldl (flip simplify) '() lst)))
+    (reverse simplified-list)))
+
+(assert-equal
+  (directions '(North South South East West North West))
+  '(West))
