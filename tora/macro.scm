@@ -27,6 +27,13 @@
 (define-macro (while test body)
   `(let= loop () (when ,test (begin ,body (loop)))))
 
+(define-macro (for i lo hi body)
+  `(let ((,i ,lo))
+     (while (<= ,i ,hi)
+            (begin
+              ,body
+              (set! ,i (+ ,i 1))))))
+
 (define-macro (assert-equal a b)
   `(if (not (equal? ,a ,b))
     (let ((msg (string-append

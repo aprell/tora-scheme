@@ -83,6 +83,12 @@
       (loop (+ i 1) (cons (fib i) l))
       (assert-equal l '(55 34 21 13 8 5 3 2 1 1 0))))
 
+(let ((l '()))
+  (begin
+    (for i 0 10
+         (set! l (cons (fib i) l)))
+    (assert-equal l '(55 34 21 13 8 5 3 2 1 1 0))))
+
 (define (sum-list lst)
   (let= loop ((acc 0)
               (l lst))
