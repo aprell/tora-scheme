@@ -252,9 +252,15 @@ eval_list = function (x, env)
 	end
 end
 
-local function interpret(filename, env)
+local function read_file(filename)
 	local file = assert(io.open(filename))
 	local inp = file:read("*all")
+	file:close()
+	return inp
+end
+
+local function interpret(filename, env)
+	local inp = read_file(filename)
 	if #inp > 0 then
 		local code = parse():match(inp)
 		local ok, err = pcall(function ()
@@ -265,16 +271,31 @@ local function interpret(filename, env)
 			os.exit(1)
 		end
 	end
-	file:close()
 	return filename:gsub("%.[^%.]*$", "") .. " loaded"
 end
 
 for sym, val in pairs {
 
-	["read"]  = function (inp) return read(lua_string(inp)) end,
-	["eval"]  = eval,
-	["print"] = function (exp) io.write(show(exp), "\n") end,
-	["load"]  = function (fln) return interpret(lua_string(fln)) end,
+	["read"] = function (inp)
+		if not symbol(inp) then inp = lua_string(inp) end
+		return read(inp)
+	end,
+
+	["read-file"] = function (filename)
+		if not symbol(filename) then filename = lua_string(filename) end
+		return read(read_file(filename))
+	end,
+
+	["eval"] = eval,
+
+	["print"] = function (exp)
+		io.write(show(exp), "\n")
+	end,
+
+	["load"] = function (filename)
+		if not symbol(filename) then filename = lua_string(filename) end
+		return interpret(filename)
+	end,
 
 } do Env.add(builtin, sym, val) end
 
