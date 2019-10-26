@@ -5,7 +5,7 @@ local unpack = unpack or table.unpack
 local mt = {__index = util}
 
 function tora_string(s)
-	return ("%q"):format(s)
+	return "\"" .. s .. "\""
 end
 
 function lua_string(s)
