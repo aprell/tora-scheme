@@ -116,3 +116,7 @@
 (assert-equal
   (directions '(North South South East West North West))
   '(West))
+
+;; ---------------------------------------------------------------------------
+
+(print (string-append "List of arguments of length " (length argv) ": " argv))

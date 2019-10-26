@@ -44,10 +44,13 @@ local function main(...)
 	eval(read([[(load "tora/macro.scm")]]))
 	if #arg > 0 then
 		if arg[1] == "-l" then
-			assert(arg[2], "This option requires a file")
-			eval(read([[(load "]] .. arg[2] .. [[")]]))
+			table.remove(arg, 1)
+			assert(arg[1], "This option requires a file")
+			eval(read(([[(define argv '(%s))]]):format(table.concat(arg, " "))))
+			eval(read([[(load "]] .. arg[1] .. [[")]]))
 			repl()
 		else
+			eval(read(([[(define argv '(%s))]]):format(table.concat(arg, " "))))
 			eval(read([[(load "]] .. arg[1] .. [[")]]))
 		end
 	else
