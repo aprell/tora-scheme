@@ -24,6 +24,17 @@
     `(letrec ((,name (lambda ,(map car bindings) ,body)))
        (,name ,@(map cadr bindings)))))
 
+(define-macro (switch expr cases)
+  (letrec ((test-equal (lambda (e pair)
+                         (if (not (equal? `,(car pair) 'default))
+                             `((equal? ,e ,(car pair)) ,@(cdr pair))
+                             `(else ,@(cdr pair)))))
+           (map (lambda (fn lst)
+                  (if (null? lst) '()
+                      (cons (fn (car lst)) (map fn (cdr lst)))))))
+  `(let ((t ,expr))
+     (cond ,@(map (lambda (pair) (test-equal 't pair)) cases)))))
+
 (define-macro (while test body)
   `(let= loop () (when ,test (begin ,body (loop)))))
 
