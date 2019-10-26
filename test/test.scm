@@ -15,6 +15,8 @@
 (print foo/bar)
 (print foo->bar)
 (print foo->bar->baz)
+(print foo.bar)
+(print foo.bar.baz)
 (newline)
 
 (begin
@@ -107,6 +109,8 @@
 (print '1.23)
 (print '#t)
 (print 'foo)
+(print 'foo.bar)
+(print 'foo.bar.baz)
 (print '(quote foo))
 (print '(f o o))
 (print '(1 2 '(3 4 5)))

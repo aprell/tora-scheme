@@ -13,6 +13,8 @@ nil
 nil
 nil
 nil
+nil
+nil
 
 3
 42
@@ -33,6 +35,8 @@ perfect
 1.23
 #t
 foo
+foo.bar
+foo.bar.baz
 (quote foo)
 (f o o)
 (1 2 (quote (3 4 5)))
