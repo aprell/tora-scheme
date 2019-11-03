@@ -28,6 +28,12 @@
 
 ;; Higher-order functions
 
+(define iter (lambda (fn lst)
+  (if (not (null? lst))
+      (begin
+        (fn (car lst))
+        (iter fn (cdr lst))))))
+
 (define map (lambda (fn lst)
   (if (null? lst)
       '()

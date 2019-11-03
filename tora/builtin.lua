@@ -55,6 +55,7 @@ for sym, val in pairs {
 
 	["newline"]  = function ( ) io.write("\n") end,
 	["nl"]       = "\n",
+	["tab"]      = "\t",
 
 	["list"]     = function (...) return setmetatable({...}, mt) end,
 	["cons"]     = function (x, xs) return setmetatable({x, unpack(xs)}, mt) end,
