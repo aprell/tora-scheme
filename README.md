@@ -18,7 +18,7 @@ interactive REPL
 or interpret the contents of a file
 
 ```
-./tora.lua example.scm
+./tora.lua examples/guess.scm
 ```
 
 Loading a file with `-l` brings the definitions into scope:
