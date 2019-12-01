@@ -12,10 +12,31 @@
 
 ;;(define atom? (lambda (x) (not (list? x))))
 
-(define cadr (lambda (x) (car (cdr x))))
+;; List accessor shorthands
+
 (define caar (lambda (x) (car (car x))))
-(define cddr (lambda (x) (cdr (cdr x))))
+
+(define cadr (lambda (x) (car (cdr x))))
+
 (define cdar (lambda (x) (cdr (car x))))
+
+(define cddr (lambda (x) (cdr (cdr x))))
+
+(define caaar (lambda (x) (car (caar x))))
+
+(define caadr (lambda (x) (car (cadr x))))
+
+(define cadar (lambda (x) (car (cdar x))))
+
+(define caddr (lambda (x) (car (cddr x))))
+
+(define cdaar (lambda (x) (cdr (caar x))))
+
+(define cdadr (lambda (x) (cdr (cadr x))))
+
+(define cddar (lambda (x) (cdr (cdar x))))
+
+(define cdddr (lambda (x) (cdr (cddr x))))
 
 (define append (lambda (l1 l2)
   (if (null? l1)

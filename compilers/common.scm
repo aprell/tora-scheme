@@ -1,7 +1,16 @@
 ;; Without pattern matching, we rely on car and cdr to deconstruct lists
 
 (define first car)
+
 (define second cadr)
+
+(define third caddr)
+
+(define (fourth lst)
+  (first (cdddr lst)))
+
+(define (fifth lst)
+  (second (cdddr lst)))
 
 (define n-th
   (lambda (lst n)

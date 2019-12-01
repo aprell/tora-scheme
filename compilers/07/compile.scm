@@ -10,9 +10,9 @@
     (((unary? 'zero?) expr) (expr? (second expr)))
     ;; (if e0 e1 e2)
     (((ternary? 'if) expr)
-     (let ((e0 (n-th expr 1))
-           (e1 (n-th expr 2))
-           (e2 (n-th expr 3)))
+     (let ((e0 (second expr))
+           (e1 (third expr))
+           (e2 (fourth expr)))
        (and (expr? e0) (and (expr? e1) (expr? e2)))))
     (else #f)))
 
@@ -46,19 +46,19 @@
     ((boolean? expr) `((mov rax ,(if expr (value->bits #t) (value->bits #f)))))
 
     (((unary? 'add1) expr)
-     (let ((c0 (compile/1 (n-th expr 1))))
+     (let ((c0 (compile/1 (second expr))))
        `(,@c0
           ,@assert-integer
           (add rax ,(value->bits 1)))))
 
     (((unary? 'sub1) expr)
-     (let ((c0 (compile/1 (n-th expr 1))))
+     (let ((c0 (compile/1 (second expr))))
        `(,@c0
           ,@assert-integer
           (sub rax ,(value->bits 1)))))
 
     (((unary? 'zero?) expr)
-     (let ((c0 (compile/1 (n-th expr 1)))
+     (let ((c0 (compile/1 (second expr)))
            (l0 (new-label "zero"))
            (l1 (new-label "zero")))
        `(,@c0
@@ -72,9 +72,9 @@
           (,l1))))
 
     (((ternary? 'if) expr)
-     (let ((c0 (compile/1 (n-th expr 1)))
-           (c1 (compile/1 (n-th expr 2)))
-           (c2 (compile/1 (n-th expr 3)))
+     (let ((c0 (compile/1 (second expr)))
+           (c1 (compile/1 (third expr)))
+           (c2 (compile/1 (fourth expr)))
            (l0 (new-label "if"))
            (l1 (new-label "if")))
        `(,@c0
