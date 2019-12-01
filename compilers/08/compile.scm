@@ -61,7 +61,7 @@
 
     ((variable? expr)
      (let ((i (lookup expr env)))
-       `((mov rax (offset rsp ,(- 0 (* (add1 i) 8)))))))
+       `((mov rax (offset rsp ,(- 0 (* i 8)))))))
 
     (((unary? 'add1) expr)
      (let ((c0 (compile/1 (second expr) env)))
@@ -117,13 +117,13 @@
 (define (lookup x env)
   (let ((res (member x env)))
     (if (list? res)
-        (sub1 (length res))
+        (length res)
         (error (string-append "Undefined variable " x)))))
 
-(assert-equal (lookup 'x '(a b x)) 0)
-(assert-equal (lookup 'x '(a x c)) 1)
-(assert-equal (lookup 'x '(x b c)) 2)
-(assert-equal (lookup 'x '(x x x)) 2)
+(assert-equal (lookup 'x '(a b x)) 1)
+(assert-equal (lookup 'x '(a x c)) 2)
+(assert-equal (lookup 'x '(x b c)) 3)
+(assert-equal (lookup 'x '(x x x)) 3)
 
 (define assert-integer
   `((mov  rbx rax)
