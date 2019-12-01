@@ -38,6 +38,16 @@
 
 (define cdddr (lambda (x) (cdr (cddr x))))
 
+(define (member x lst)
+  (if (null? lst)
+      #f
+      (if (equal? x (car lst))
+          lst
+          (member x (cdr lst)))))
+
+(define (member? x lst)
+  (list? (member x lst)))
+
 (define append (lambda (l1 l2)
   (if (null? l1)
       l2

@@ -1,11 +1,6 @@
 (load "tora/prelude.scm")
 (load "../common.scm")
 
-(define (member? x lst)
-  (if (null? lst) #f
-      (if (equal? x (car lst)) #t
-          (member? x (cdr lst)))))
-
 (define (variable? x)
   (and (symbol? x) (not (member? x '(add1 sub1 zero? if let)))))
 
@@ -120,11 +115,10 @@
     (else (error "compile/1"))))
 
 (define (lookup x env)
-  (if (null? env)
-      (error (string-append "Undefined variable " x))
-      (if (equal? x (car env))
-          (length (cdr env))
-          (lookup x (cdr env)))))
+  (let ((res (member x env)))
+    (if (list? res)
+        (sub1 (length res))
+        (error (string-append "Undefined variable " x)))))
 
 (assert-equal (lookup 'x '(a b x)) 0)
 (assert-equal (lookup 'x '(a x c)) 1)
