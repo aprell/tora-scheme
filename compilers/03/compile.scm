@@ -19,7 +19,7 @@
   (let ((opcode   (car instr))
         (operands (cdr instr)))
     (switch opcode
-            (('mov (string-append tab "mov " (fst operands) ", " (snd operands)))
+            (('mov (string-append tab "mov " (first operands) ", " (second operands)))
              ('ret (string-append tab "ret"))
              (default ;; Label
                (string-append (label->string opcode) ":"))))))
@@ -35,7 +35,7 @@
   (begin
     (if (<= (length argv) 1)
         (error (string-append "Filename expected: arguments are " (cdr argv))))
-    (let ((filename (snd argv)))
+    (let ((filename (second argv)))
       (let ((input (read-file filename)))
         (if (expr? input)
             (emit (compile input))

@@ -4,8 +4,8 @@
 (define (expr? expr)
   (cond
     ((number? expr) #t)
-    (((unary? 'add1) expr) (expr? (snd expr)))
-    (((unary? 'sub1) expr) (expr? (snd expr)))
+    (((unary? 'add1) expr) (expr? (second expr)))
+    (((unary? 'sub1) expr) (expr? (second expr)))
     (else #f)))
 
 (define (compile expr)
@@ -16,8 +16,8 @@
 (define (compile/1 expr)
   (cond
     ((number? expr) `((mov rax ,expr)))
-    (((unary? 'add1) expr) `(,@(compile/1 (snd expr)) (add rax 1)))
-    (((unary? 'sub1) expr) `(,@(compile/1 (snd expr)) (sub rax 1)))
+    (((unary? 'add1) expr) `(,@(compile/1 (second expr)) (add rax 1)))
+    (((unary? 'sub1) expr) `(,@(compile/1 (second expr)) (sub rax 1)))
     (else (error "compile/1"))))
 
 ;; Prefix label with an underscore (macOS)
@@ -28,9 +28,9 @@
   (let ((opcode   (car instr))
         (operands (cdr instr)))
     (switch opcode
-            (('mov (string-append tab "mov " (fst operands) ", " (snd operands)))
-             ('add (string-append tab "add " (fst operands) ", " (snd operands)))
-             ('sub (string-append tab "sub " (fst operands) ", " (snd operands)))
+            (('mov (string-append tab "mov " (first operands) ", " (second operands)))
+             ('add (string-append tab "add " (first operands) ", " (second operands)))
+             ('sub (string-append tab "sub " (first operands) ", " (second operands)))
              ('ret (string-append tab "ret"))
              (default ;; Label
                (string-append (label->string opcode) ":"))))))
@@ -46,7 +46,7 @@
   (begin
     (if (<= (length argv) 1)
         (error (string-append "Filename expected: arguments are " (cdr argv))))
-    (let ((filename (snd argv)))
+    (let ((filename (second argv)))
       (let ((input (read-file filename)))
         (if (expr? input)
             (emit (compile input))
