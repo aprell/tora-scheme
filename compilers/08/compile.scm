@@ -135,28 +135,29 @@
 (define (label->string label)
   (string-append "_" label))
 
-(define (offset->string operands)
-  (string-append "[" (first operands) " + " (second operands) "]"))
+(define (operands->string operands)
+  (let ((op1 (first operands))
+        (op2 (second operands)))
+    (string-append
+      (if ((binary? 'offset) op1)
+          ;; [Register + Integer]
+          (string-append "[" (second op1) " + " (third op1) "]")
+          op1)
+      ", "
+      (if ((binary? 'offset) op2)
+          ;; [Register + Integer]
+          (string-append "[" (second op2) " + " (third op2) "]")
+          op2))))
 
 (define (instr->string instr)
   (let ((opcode   (car instr))
         (operands (cdr instr)))
     (switch opcode
-            (('mov
-              (string-append
-                tab
-                "mov "
-                (if ((binary? 'offset) (first operands))
-                    (offset->string (cdr (first operands)))
-                    (first operands))
-                ", "
-                (if ((binary? 'offset) (second operands))
-                    (offset->string (cdr (second operands)))
-                    (second operands))))
-             ('add  (string-append tab "add " (first operands) ", " (second operands)))
-             ('sub  (string-append tab "sub " (first operands) ", " (second operands)))
-             ('cmp  (string-append tab "cmp " (first operands) ", " (second operands)))
-             ('_and (string-append tab "and " (first operands) ", " (second operands)))
+            (('mov  (string-append tab "mov " (operands->string operands)))
+             ('add  (string-append tab "add " (operands->string operands)))
+             ('sub  (string-append tab "sub " (operands->string operands)))
+             ('cmp  (string-append tab "cmp " (operands->string operands)))
+             ('_and (string-append tab "and " (operands->string operands)))
              ('jmp  (string-append tab "jmp " (label->string (first operands))))
              ('jne  (string-append tab "jne " (label->string (first operands))))
              ('call (string-append tab "call " (label->string (first operands))))
