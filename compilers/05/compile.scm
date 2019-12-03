@@ -1,11 +1,12 @@
 (load "tora/prelude.scm")
 (load "../common.scm")
 
+(define unary-primitive? (unary? '(add1 sub1)))
+
 (define (expr? expr)
   (cond
     ((number? expr) #t)
-    (((unary? 'add1) expr) (expr? (second expr)))
-    (((unary? 'sub1) expr) (expr? (second expr)))
+    ((unary-primitive? expr) (expr? (second expr)))
     ;; (if (zero? e0) e1 e2)
     (((ternary? 'if) expr)
      (let ((test-e (second expr))

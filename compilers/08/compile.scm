@@ -4,15 +4,15 @@
 (define (variable? x)
   (and (symbol? x) (not (member? x '(add1 sub1 zero? if let)))))
 
+(define unary-primitive? (unary? '(add1 sub1 zero?)))
+
 (define (expr? expr)
   (cond
     ((number? expr) #t)
     ((boolean? expr) #t)
     ((variable? expr) #t)
 
-    (((unary? 'add1) expr) (expr? (second expr)))
-    (((unary? 'sub1) expr) (expr? (second expr)))
-    (((unary? 'zero?) expr) (expr? (second expr)))
+    ((unary-primitive? expr) (expr? (second expr)))
 
     ;; (if e0 e1 e2)
     (((ternary? 'if) expr)
