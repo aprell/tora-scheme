@@ -122,31 +122,27 @@
        (mov rax 1)
        (,l1))))
 
-(define new-variable (gensym 0))
-
 ;; (+ e0 e1) => (let ((x e0)) (+ x e1))
 (define (compile-+ e0 e1 env)
-  (let ((x (new-variable "x")))
-    (let ((c0 (compile/1 e0 env))
-          (c1 (compile/1 e1 (cons x env))))
-      `(,@c0
-         ,@assert-integer
-         (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
-         ,@c1
-         ,@assert-integer
-         (add rax (offset rsp ,(- 0 (* (lookup x (cons x env)) 8))))))))
+  (let ((c0 (compile/1 e0 env))
+        (c1 (compile/1 e1 (cons #f env))))
+    `(,@c0
+       ,@assert-integer
+       (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
+       ,@c1
+       ,@assert-integer
+       (add rax (offset rsp ,(- 0 (* (add1 (length env)) 8)))))))
 
 ;; (- e0 e1) => (let ((x e1)) (- e0 x))
 (define (compile-- e0 e1 env)
-  (let ((x (new-variable "x")))
-    (let ((c1 (compile/1 e1 env))
-          (c0 (compile/1 e0 (cons x env))))
-      `(,@c1
-         ,@assert-integer
-         (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
-         ,@c0
-         ,@assert-integer
-         (sub rax (offset rsp ,(- 0 (* (lookup x (cons x env)) 8))))))))
+  (let ((c1 (compile/1 e1 env))
+        (c0 (compile/1 e0 (cons #f env))))
+    `(,@c1
+       ,@assert-integer
+       (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
+       ,@c0
+       ,@assert-integer
+       (sub rax (offset rsp ,(- 0 (* (add1 (length env)) 8)))))))
 
 (define (compile-if e0 e1 e2 env)
   (let ((c0 (compile/1 e0 env))
