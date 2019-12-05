@@ -62,13 +62,13 @@
     (((binary? '+) expr)
      (let ((e0 (second expr))
            (e1 (third expr)))
-       (compile-+ e0 e1 env)))
+       (compile-binary 'add e0 e1 env)))
 
     ;; (- e0 e1)
     (((binary? '-) expr)
      (let ((e0 (second expr))
            (e1 (third expr)))
-       (compile-- e0 e1 env)))
+       (compile-binary 'sub e0 e1 env)))
 
     ;; (if e0 e1 e2)
     (((ternary? 'if) expr)
@@ -122,19 +122,8 @@
        (mov rax 1)
        (,l1))))
 
-;; (+ e0 e1) => (let ((x e0)) (+ x e1))
-(define (compile-+ e0 e1 env)
-  (let ((c0 (compile/1 e0 env))
-        (c1 (compile/1 e1 (cons #f env))))
-    `(,@c0
-       ,@assert-integer
-       (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
-       ,@c1
-       ,@assert-integer
-       (add rax (offset rsp ,(- 0 (* (add1 (length env)) 8)))))))
-
-;; (- e0 e1) => (let ((x e1)) (- e0 x))
-(define (compile-- e0 e1 env)
+;; (op e0 e1) => (let ((x e1)) (op e0 x))
+(define (compile-binary op e0 e1 env)
   (let ((c1 (compile/1 e1 env))
         (c0 (compile/1 e0 (cons #f env))))
     `(,@c1
@@ -142,7 +131,7 @@
        (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
        ,@c0
        ,@assert-integer
-       (sub rax (offset rsp ,(- 0 (* (add1 (length env)) 8)))))))
+       (,op rax (offset rsp ,(- 0 (* (add1 (length env)) 8)))))))
 
 (define (compile-if e0 e1 e2 env)
   (let ((c0 (compile/1 e0 env))
