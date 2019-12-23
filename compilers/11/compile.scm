@@ -10,6 +10,9 @@
 (define all-primitives
   `(,@unary-primitives ,@binary-primitives if let))
 
+(define (immediate? expr)
+  (or (number? expr) (or (boolean? expr) (equal? expr '()))))
+
 (define (variable? x)
   (and (symbol? x) (not (member? x all-primitives))))
 
@@ -21,9 +24,7 @@
 
 (define (expr? expr)
   (cond
-    ((number? expr) #t)
-    ((boolean? expr) #t)
-    ((equal? expr '()) #t)
+    ((immediate? expr) #t)
     ((variable? expr) #t)
 
     ((unary-primitive? expr) (expr? (second expr)))
@@ -62,36 +63,20 @@
 
 (define (compile/1 expr env)
   (cond
-    ((number? expr) (compile-integer expr))
-    ((boolean? expr) (compile-boolean expr))
-    ((equal? expr '()) (compile-empty expr))
+    ((immediate? expr) (compile-immediate expr))
     ((variable? expr) (compile-variable expr env))
 
-    (((unary? 'add1) expr) (compile-add1 (second expr) env))
-    (((unary? 'sub1) expr) (compile-sub1 (second expr) env))
-    (((unary? 'zero?) expr) (compile-zero? (second expr) env))
-    (((unary? 'box) expr) (compile-box (second expr) env))
-    (((unary? 'unbox) expr) (compile-unbox (second expr) env))
-    (((unary? 'car) expr) (compile-car (second expr) env))
-    (((unary? 'cdr) expr) (compile-cdr (second expr) env))
+    ((unary-primitive? expr)
+     (let ((op (first expr))
+           (e0 (second expr)))
+       (compile-unary op e0 env)))
 
-    ;; (+ e0 e1)
-    (((binary? '+) expr)
-     (let ((e0 (second expr))
+    ;; (+ e0 e1) | (- e0 e1) | (cons e0 e1)
+    ((binary-primitive? expr)
+     (let ((op (first expr))
+           (e0 (second expr))
            (e1 (third expr)))
-       (compile-binary 'add e0 e1 env)))
-
-    ;; (- e0 e1)
-    (((binary? '-) expr)
-     (let ((e0 (second expr))
-           (e1 (third expr)))
-       (compile-binary 'sub e0 e1 env)))
-
-    ;; (cons e0 e1)
-    (((binary? 'cons) expr)
-     (let ((e0 (second expr))
-           (e1 (third expr)))
-       (compile-cons e0 e1 env)))
+       (compile-binary op e0 e1 env)))
 
     ;; (if e0 e1 e2)
     (((ternary? 'if) expr)
@@ -109,21 +94,19 @@
 
     (else (error "compile/1"))))
 
-(define (compile-integer i)
-  ;; Shift left by 5
-  `((mov rax ,(* i 32))))
-
-(define (compile-boolean b)
-  ;; #t == 0b01000, #f == 0b10000
-  `((mov rax ,(if b 8 16))))
-
-(define (compile-empty e)
-  ;; () == 0b11000
-  `((mov rax 24)))
+(define (compile-immediate i)
+  `((mov rax
+         ,(cond
+            ((number? i) (* i 32))     ;; Shift left by 5
+            ((boolean? i) (if i 8 16)) ;; #t == 0b01000, #f == 0b10000
+            ((equal? i '()) 24)))))    ;; () == 0b11000
 
 (define (compile-variable x env)
   (let ((i (lookup x env)))
     `((mov rax (offset rsp ,(- 0 (* i 8)))))))
+
+(define (compile-unary op e0 env)
+  ((symbol-append 'compile- op) e0 env))
 
 (define (compile-add1 e0 env)
   (let ((c0 (compile/1 e0 env)))
@@ -192,26 +175,26 @@
 (define (compile-binary op e0 e1 env)
   (let ((c1 (compile/1 e1 env))
         (c0 (compile/1 e0 (cons #f env))))
-    `(,@c1
-       ,@assert-integer
-       (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
-       ,@c0
-       ,@assert-integer
-       (,op rax (offset rsp ,(- 0 (* (add1 (length env)) 8)))))))
-
-(define (compile-cons e0 e1 env)
-  (let ((c1 (compile/1 e1 env))
-        (c0 (compile/1 e0 (cons #f env))))
-    `(,@c1
-       (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
-       ,@c0
-       (mov (offset rdi 0) rax)
-       (mov rax (offset rsp ,(- 0 (* (add1 (length env)) 8))))
-       (mov (offset rdi 8) rax)
-       (mov rax rdi)
-       ;; Tag pointer as pair
-       (_or rax ,type-pair)
-       (add rdi 16))))
+    (if (member? op '(+ -))
+      ;; (+ e0 e1) | (- e0 e1)
+      `(,@c1
+         ,@assert-integer
+         (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
+         ,@c0
+         ,@assert-integer
+         (,(switch op (('+ 'add) ('- 'sub)))
+           rax (offset rsp ,(- 0 (* (add1 (length env)) 8)))))
+      ;; (cons e0 e1)
+      `(,@c1
+         (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
+         ,@c0
+         (mov (offset rdi 0) rax)
+         (mov rax (offset rsp ,(- 0 (* (add1 (length env)) 8))))
+         (mov (offset rdi 8) rax)
+         (mov rax rdi)
+         ;; Tag pointer as pair
+         (_or rax ,type-pair)
+         (add rdi 16)))))
 
 (define (compile-if e0 e1 e2 env)
   (let ((c0 (compile/1 e0 env))
