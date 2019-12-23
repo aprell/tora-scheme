@@ -151,33 +151,41 @@
        (mov rax 16)
        (,l1))))
 
+(define type-imm  0) ;; 0b000
+(define type-box  1) ;; 0b001
+(define type-pair 2) ;; 0b010
+
 (define (compile-box e0 env)
   (let ((c0 (compile/1 e0 env)))
     `(,@c0
        (mov (offset rdi 0) rax)
        (mov rax rdi)
-       (_or rax 1) ;; prevent macro expansion
+       ;; Tag pointer as box
+       (_or rax ,type-box)
        (add rdi 8))))
 
 (define (compile-unbox e0 env)
   (let ((c0 (compile/1 e0 env)))
     `(,@c0
        ,@assert-box
-       (xor rax 1)
+       ;; Untag pointer
+       (xor rax ,type-box)
        (mov rax (offset rax 0)))))
 
 (define (compile-car e0 env)
   (let ((c0 (compile/1 e0 env)))
     `(,@c0
        ,@assert-pair
-       (xor rax 2)
+       ;; Untag pointer
+       (xor rax ,type-pair)
        (mov rax (offset rax 0)))))
 
 (define (compile-cdr e0 env)
   (let ((c0 (compile/1 e0 env)))
     `(,@c0
        ,@assert-pair
-       (xor rax 2)
+       ;; Untag pointer
+       (xor rax ,type-pair)
        (mov rax (offset rax 8)))))
 
 ;; (op e0 e1) => (let ((x e1)) (op e0 x))
@@ -201,7 +209,8 @@
        (mov rax (offset rsp ,(- 0 (* (add1 (length env)) 8))))
        (mov (offset rdi 8) rax)
        (mov rax rdi)
-       (_or rax 2) ;; prevent macro expansion
+       ;; Tag pointer as pair
+       (_or rax ,type-pair)
        (add rdi 16))))
 
 (define (compile-if e0 e1 e2 env)
@@ -243,14 +252,14 @@
     (cmp  rbx ,type)
     (jne  err)))
 
-;; 0b00000
-(define assert-integer (assert-type (sub1 32) 0))
+(define assert-integer
+  (assert-type (sub1 32) type-imm))
 
-;; 0b001
-(define assert-box (assert-type (sub1 8) 1))
+(define assert-box
+  (assert-type (sub1 8) type-box))
 
-;; 0b010
-(define assert-pair (assert-type (sub1 8) 2))
+(define assert-pair
+  (assert-type (sub1 8) type-pair))
 
 ;; Prefix label with an underscore (macOS)
 (define (label->string label)
