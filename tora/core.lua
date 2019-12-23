@@ -242,12 +242,16 @@ eval_list = function (x, env)
 			raise("eval: undefined function " ..
 			      string.format("'%s'", show(x[1])))
 		elseif type(fn) ~= "function" then
-			raise("eval: attempt to call " ..
-			      string.format("'%s' (a non-function value)", show(fn)))
+			fn = Env.lookup(env, fn) or fn
+			if type(fn) ~= "function" then
+				raise("eval: attempt to call " ..
+			          string.format("'%s' (a non-function value)", show(fn)))
+			end
 		end
 		-- 2) Evaluate arguments
 		local args = slice(x, 2):map(function (exp) return eval(exp, env) end)
 		-- 3) Apply function to arguments
+		assert(type(fn) == "function")
 		return fn(unpack(args))
 	end
 end
