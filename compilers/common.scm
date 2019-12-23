@@ -46,3 +46,6 @@
       (begin
         (set! n (add1 n))
         label))))
+
+(define (unimplemented name)
+  (error (string-append "Unimplemented: " name)))
