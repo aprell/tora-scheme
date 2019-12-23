@@ -83,6 +83,10 @@ for sym, val in pairs {
 		return tora_string(table.concat(map({...}, show)))
 	end,
 
+	["symbol-append"] = function (...)
+		return table.concat(map({...}, show))
+	end,
+
 	["error"]    = function (msg) raise(lua_string(msg)) end,
 
 } do Env.add(builtin, sym, val) end
