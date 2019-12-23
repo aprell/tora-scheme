@@ -243,7 +243,7 @@ eval_list = function (x, env)
 			      string.format("'%s'", show(x[1])))
 		elseif type(fn) ~= "function" then
 			raise("eval: attempt to call " ..
-			      string.format("'%s' (a %s value)", show(x[1]), type(x[1])))
+			      string.format("'%s' (a non-function value)", show(fn)))
 		end
 		-- 2) Evaluate arguments
 		local args = slice(x, 2):map(function (exp) return eval(exp, env) end)
