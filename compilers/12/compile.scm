@@ -134,8 +134,9 @@
     ;; Function call: (f ...)
     ((variable? (first expr))
      (let ((f (first expr))
-           (x (cadr expr)))
-       (compile-call f x env)))
+           (x (rest expr)))
+       ;; Note that (f) and (f ()) are indistinguishable
+       (compile-call f (if (not (null? x)) (first x) x) env)))
 
     (else (error "compile/1"))))
 
