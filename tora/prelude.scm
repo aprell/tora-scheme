@@ -78,6 +78,11 @@
           (cons (car lst) (filter p (cdr lst)))
           (filter p (cdr lst))))))
 
+(define any (lambda (p lst)
+  (if (null? lst) #f
+    (if (p (car lst)) #t
+      (any p (cdr lst))))))
+
 (define all (lambda (p lst)
   (if (null? lst) #t
     (if (not (p (car lst))) #f
