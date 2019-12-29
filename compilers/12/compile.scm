@@ -134,9 +134,8 @@
     ;; Function call: (f ...)
     ((variable? (first expr))
      (let ((f (first expr))
-           (x (rest expr)))
-       ;; Note that (f) and (f ()) are indistinguishable
-       (compile-call f (if (not (null? x)) (first x) x) env)))
+           (xs (rest expr)))
+       (compile-call f xs env)))
 
     (else (error "compile/1"))))
 
@@ -282,15 +281,21 @@
       ,@c0
       (ret))))
 
-;; TODO: Support more than a single argument
-(define (compile-call f x env)
-  (let ((c0 (compile/1 x env))
-        (h (* (length env) 8)))
+(define (compile-call f xs env)
+  (let ((c0 (compile-args xs (cons #f env)))
+        (sz (* (length env) 8)))
     `(,@c0
-       (sub rsp ,h)
-       (mov (offset rsp -16) rax)
+       (sub rsp ,sz)
        (call ,f)
-       (add rsp ,h))))
+       (add rsp ,sz))))
+
+(define (compile-args args env)
+  (if (null? args) '()
+    (let ((c0 (compile/1 (first args) env))
+          (cs (compile-args (rest args) (cons #f env))))
+      `(,@c0
+         (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
+         ,@cs))))
 
 (define (lookup x env)
   (let ((res (member x env)))
