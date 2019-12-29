@@ -22,11 +22,6 @@
 (define binary-primitive?
   (binary? binary-primitives))
 
-(define (all pred lst)
-  (if (null? lst) #t
-    (if (not (pred (car lst))) #f
-      (all pred (cdr lst)))))
-
 (define (expr? expr)
   (cond
     ((immediate? expr) #t)
