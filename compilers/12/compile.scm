@@ -282,9 +282,9 @@
       (ret))))
 
 (define (compile-call f xs env)
-  (let ((c0 (compile-args xs (cons #f env)))
+  (let ((cs (compile-args xs (cons #f env)))
         (sz (* (length env) 8)))
-    `(,@c0
+    `(,@cs
        (sub rsp ,sz)
        (call ,f)
        (add rsp ,sz))))
