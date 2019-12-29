@@ -1,6 +1,7 @@
 [Jig: jumping to tail calls](http://www.cs.umd.edu/class/fall2019/cmsc430/Jig.html)
 
 ```diff
+$ diff -u ../12/test.s test.s
 --- ../12/test.s
 +++ test.s
 @@ -3,10 +3,10 @@
