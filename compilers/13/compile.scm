@@ -357,14 +357,18 @@
 (define (compile-tail-call f xs env)
   (let ((cs (compile-args xs env)))
     `(,@cs
-       ,@(move-args (length xs) (- 0 (length env)))
+       ;; Reuse stack space
+       ,@(move-args (length xs) (length env))
        (jmp ,f))))
 
+;; Move n arguments up the stack by off slots
 (define (move-args n off)
   (if (= n 0) '()
     `(,@(move-args (sub1 n) off)
-       (mov rbx (offset rsp ,(* (- off n) 8)))
-       (mov (offset rsp ,(* (- 0 n) 8)) rbx))))
+       ;; Load from address [rsp - (n + off) * 8]
+       (mov rbx (offset rsp ,(- 0 (* (+ n off) 8))))
+       ;; Write to address [rsp - (n + off - off) * 8] = [rsp - n * 8]
+       (mov (offset rsp ,(- 0 (* n 8))) rbx))))
 
 (define (compile-args args env)
   (if (null? args) '()
