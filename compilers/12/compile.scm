@@ -55,11 +55,12 @@
     ;;   ...
     ;;   e)
     ((equal? (first expr) 'begin)
-     (let ((lst (reverse (cdr expr))))
-       (and (expr? (first lst)) (all expr-define? (cdr lst)))))
+     (let ((expr-and-defs (reverse (rest expr))))
+       (and (expr? (first expr-and-defs))
+            (all expr-define? (rest expr-and-defs)))))
 
     ;; Function call: (f ...)
-    ((variable? (first expr)) (all expr? (cdr expr)))
+    ((variable? (first expr)) (all expr? (rest expr)))
 
     (else #f)))
 
@@ -82,8 +83,8 @@
     ;;   ...
     ;;   e)
     ((equal? (first expr) 'begin)
-     (let ((expr-and-defs (reverse (cdr expr))))
-       (let ((ds (compile-defines (cdr expr-and-defs)))
+     (let ((expr-and-defs (reverse (rest expr))))
+       (let ((ds (compile-defines (rest expr-and-defs)))
              (c0 (compile-entry (first expr-and-defs))))
          `(,@c0
             ,@ds))))

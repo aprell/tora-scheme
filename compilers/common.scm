@@ -2,6 +2,8 @@
 
 (define first car)
 
+(define rest cdr)
+
 (define second cadr)
 
 (define third caddr)
