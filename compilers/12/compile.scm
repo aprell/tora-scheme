@@ -82,7 +82,7 @@
     ;;   (define (f1 ...) e1)
     ;;   ...
     ;;   e)
-    ((equal? (first expr) 'begin)
+    ((and (list? expr) (equal? (first expr) 'begin))
      (let ((expr-and-defs (reverse (rest expr))))
        (let ((ds (compile-defines (rest expr-and-defs)))
              (c0 (compile-entry (first expr-and-defs))))
