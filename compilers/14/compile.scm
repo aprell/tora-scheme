@@ -102,12 +102,12 @@
       (compile-entry expr))))
 
 (define (compile-entry expr)
-  `((entry)
+  `((label entry)
     ,@(compile-tail/1 expr '())
     (ret)
-    (err)
+    (label err)
     (push rbp)
-    (call error)))
+    (call (label error))))
 
 ;; Compile expr in non-tail position
 (define (compile/1 expr env)
@@ -244,12 +244,12 @@
     `(,@c0
        ,@assert-integer
        (cmp rax 0)
-       (jne ,l0)
+       (jne (label ,l0))
        (mov rax 8)
-       (jmp ,l1)
-       (,l0)
+       (jmp (label ,l1))
+       (label ,l0)
        (mov rax 16)
-       (,l1))))
+       (label ,l1))))
 
 (define type-imm  0) ;; 0b000
 (define type-box  1) ;; 0b001
@@ -322,12 +322,12 @@
         (l1 (new-label "if")))
     `(,@c0
        (cmp rax 8)
-       (jne ,l0)
+       (jne (label ,l0))
        ,@c1
-       (jmp ,l1)
-       (,l0)
+       (jmp (label ,l1))
+       (label ,l0)
        ,@c2
-       (,l1))))
+       (label ,l1))))
 
 (define (compile-tail-if e0 e1 e2 env)
   (let ((c0 (compile/1 e0 env))
@@ -337,12 +337,12 @@
         (l1 (new-label "if")))
     `(,@c0
        (cmp rax 8)
-       (jne ,l0)
+       (jne (label ,l0))
        ,@c1
-       (jmp ,l1)
-       (,l0)
+       (jmp (label ,l1))
+       (label ,l0)
        ,@c2
-       (,l1))))
+       (label ,l1))))
 
 (define (compile-let x e0 e1 env)
   (let ((c0 (compile/1 e0 env))
@@ -372,7 +372,7 @@
 
 (define (compile-define f xs e0)
   (let ((c0 (compile-tail/1 e0 (reverse xs))))
-    `((,f) ;; TODO: (symbol->label f)
+    `((label ,f) ;; TODO: (symbol->label f)
       ,@c0
       (ret))))
 
@@ -382,7 +382,7 @@
         (sz (* (length env) 8)))
     `(,@cs
        (sub rsp ,sz)
-       (call ,f)
+       (call (label ,f))
        (add rsp ,sz))))
 
 ;; Compile a function call in tail position
@@ -391,7 +391,7 @@
     `(,@cs
        ;; Reuse stack space
        ,@(move-args (length xs) (length env))
-       (jmp ,f))))
+       (jmp (label ,f)))))
 
 ;; Move n arguments up the stack by off slots
 (define (move-args n off)
@@ -461,7 +461,7 @@
   `((mov  rbx rax)
     (_and rbx ,mask) ;; prevent macro expansion
     (cmp  rbx ,type)
-    (jne  err)))
+    (jne  (label err))))
 
 (define assert-integer
   (assert-type (sub1 32) type-imm))
@@ -481,15 +481,18 @@
 (define (label->string label)
   (string-append "_" label))
 
+(define (offset->string base off)
+  (if (member? base registers)
+    ;; [Register + Integer]
+    (string-append "[" base " + " off "]")
+    ;; [Label + Integer]
+    (string-append "[rel " (label->string base) " + " off "]")))
+
 (define (operand->string op)
-  (string-append
-    (if ((binary? 'offset) op)
-      (if (member? (second op) registers)
-        ;; [Register + Integer]
-        (string-append "[" (second op) " + " (third op) "]")
-        ;; [Label + Integer]
-        (string-append "[rel " (label->string (second op)) " + " (third op) "]"))
-      op)))
+  (cond
+    (((unary? 'label) op) (label->string (second op)))
+    (((binary? 'offset) op) (offset->string (second op) (third op)))
+    (else op)))
 
 (define (operands->string ops)
   (string-append
@@ -507,27 +510,18 @@
              ('_and (string-append tab "and "  (operands->string operands)))
              ('_or  (string-append tab "or "   (operands->string operands)))
              ('xor  (string-append tab "xor "  (operands->string operands)))
-             ('jmp  (string-append tab "jmp "
-                                   (if ((binary? 'offset) (first operands))
-                                     (operand->string (first operands))
-                                     (label->string (first operands)))))
-             ('jne  (string-append tab "jne "
-                                   (if ((binary? 'offset) (first operands))
-                                     (operand->string (first operands))
-                                     (label->string (first operands)))))
-             ('call (string-append tab "call "
-                                   (if ((binary? 'offset) (first operands))
-                                     (operand->string (first operands))
-                                     (label->string (first operands)))))
-             ('push (string-append tab "push " (first operands)))
+             ('jmp  (string-append tab "jmp "  (operand->string (first operands))))
+             ('jne  (string-append tab "jne "  (operand->string (first operands))))
+             ('call (string-append tab "call " (operand->string (first operands))))
+             ('push (string-append tab "push " (operand->string (first operands))))
              ('ret  (string-append tab "ret"))
              (default ;; Label
-               (string-append (label->string opcode) ":"))))))
+               (string-append (label->string (first operands)) ":"))))))
 
 (define (emit instrs)
   (let ((entry (caar instrs)))
     (begin
-      (print (string-append tab "global " (label->string entry)))
+      (print (string-append tab "global " (label->string 'entry)))
       (print (string-append tab "extern " (label->string 'error)))
       (print (string-append tab "section .text"))
       (iter (compose print instr->string) instrs))))
