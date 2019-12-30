@@ -1,0 +1,13 @@
+(begin
+
+  (define (even? x)
+    (if (zero? x)
+        #t
+        (call (fun odd?) (sub1 x))))
+
+  (define (odd? x)
+    (if (zero? x)
+        #f
+        (call (fun even?) (sub1 x))))
+
+  (call (fun even?) 101)) ;; => #f
