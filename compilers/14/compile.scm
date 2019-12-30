@@ -2,13 +2,13 @@
 (load "../common.scm")
 
 (define unary-primitives
-  '(add1 sub1 zero? box unbox car cdr))
+  '(add1 sub1 zero? box unbox car cdr fun))
 
 (define binary-primitives
   '(+ - cons))
 
 (define all-primitives
-  `(,@unary-primitives ,@binary-primitives if let begin define fun call))
+  `(,@unary-primitives ,@binary-primitives if let begin define call))
 
 (define (immediate? expr)
   (or (number? expr) (or (boolean? expr) (equal? expr '()))))
@@ -61,9 +61,6 @@
 
     ;; Function call: (f ...)
     ((variable? (first expr)) (all expr? (rest expr)))
-
-    ;; Function pointer: (fun f)
-    (((unary? 'fun) expr) (variable? (second expr)))
 
     ;; General function call: (call e0 e1 ...)
     ((equal? (first expr) 'call)
@@ -147,11 +144,6 @@
            (xs (rest expr)))
        (compile-call f xs env)))
 
-    ;; Function pointer: (fun f)
-    (((unary? 'fun) expr)
-     (let ((f (second expr)))
-       (compile-fun f env)))
-
     ;; General function call: (call e0 e1 ...)
     ((equal? (first expr) 'call)
      (let ((e0 (first (rest expr)))
@@ -197,11 +189,6 @@
      (let ((f (first expr))
            (xs (rest expr)))
        (compile-tail-call f xs env)))
-
-    ;; Function pointer: (fun f)
-    (((unary? 'fun) expr)
-     (let ((f (second expr)))
-       (compile-fun f env)))
 
     ;; General function call: (call e0 e1 ...)
     ((equal? (first expr) 'call)
