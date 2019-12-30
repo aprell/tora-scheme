@@ -279,22 +279,23 @@
 ;; (op e0 e1) => (let ((x e1)) (op e0 x))
 (define (compile-binary op e0 e1 env)
   (let ((c1 (compile/1 e1 env))
-        (c0 (compile/1 e0 (cons #f env))))
+        (c0 (compile/1 e0 (cons #f env)))
+        (i (- 0 (* (add1 (length env)) 8))))
     (if (member? op '(+ -))
       ;; (+ e0 e1) | (- e0 e1)
       `(,@c1
          ,@assert-integer
-         (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
+         (mov (offset rsp ,i) rax)
          ,@c0
          ,@assert-integer
          (,(switch op (('+ 'add) ('- 'sub)))
-           rax (offset rsp ,(- 0 (* (add1 (length env)) 8)))))
+           rax (offset rsp ,i)))
       ;; (cons e0 e1)
       `(,@c1
-         (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
+         (mov (offset rsp ,i) rax)
          ,@c0
          (mov (offset rdi 0) rax)
-         (mov rax (offset rsp ,(- 0 (* (add1 (length env)) 8))))
+         (mov rax (offset rsp ,i))
          (mov (offset rdi 8) rax)
          (mov rax rdi)
          ;; Tag pointer as pair
@@ -333,16 +334,18 @@
 
 (define (compile-let x e0 e1 env)
   (let ((c0 (compile/1 e0 env))
-        (c1 (compile/1 e1 (cons x env))))
+        (c1 (compile/1 e1 (cons x env)))
+        (i (- 0 (* (add1 (length env)) 8))))
     `(,@c0
-       (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
+       (mov (offset rsp ,i) rax)
        ,@c1)))
 
 (define (compile-tail-let x e0 e1 env)
   (let ((c0 (compile/1 e0 env))
-        (c1 (compile-tail/1 e1 (cons x env))))
+        (c1 (compile-tail/1 e1 (cons x env)))
+        (i (- 0 (* (add1 (length env)) 8))))
     `(,@c0
-       (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
+       (mov (offset rsp ,i) rax)
        ,@c1)))
 
 (define (compile-defines lst)
@@ -392,9 +395,10 @@
 (define (compile-args args env)
   (if (null? args) '()
     (let ((c0 (compile/1 (first args) env))
-          (cs (compile-args (rest args) (cons #f env))))
+          (cs (compile-args (rest args) (cons #f env)))
+          (i (- 0 (* (add1 (length env)) 8))))
       `(,@c0
-         (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
+         (mov (offset rsp ,i) rax)
          ,@cs))))
 
 (define (compile-fun f env)
@@ -408,11 +412,12 @@
 (define (compile-fun-call e0 es env)
   (let ((c0 (compile/1 e0 env))
         (cs (compile-args es (cons #f env)))
-        (sz (* (length env) 8)))
+        (sz (* (length env) 8))
+        (i (- 0 (* (add1 (length env)) 8))))
     `(,@c0
-       (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
+       (mov (offset rsp ,i) rax)
        ,@cs
-       (mov rax (offset rsp ,(- 0 (* (add1 (length env)) 8))))
+       (mov rax (offset rsp ,i))
        ,@assert-fun
        (sub rsp ,sz)
        ;; Untag pointer
@@ -422,11 +427,12 @@
 
 (define (compile-fun-tail-call e0 es env)
   (let ((c0 (compile/1 e0 env))
-        (cs (compile-args es (cons #f env))))
+        (cs (compile-args es (cons #f env)))
+        (i (- 0 (* (add1 (length env)) 8))))
     `(,@c0
-       (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
+       (mov (offset rsp ,i) rax)
        ,@cs
-       (mov rax (offset rsp ,(- 0 (* (add1 (length env)) 8))))
+       (mov rax (offset rsp ,i))
        ,@(move-args (length es) (add1 (length env)))
        ,@assert-fun
        ;; Untag pointer
