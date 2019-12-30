@@ -519,9 +519,9 @@
                (string-append (label->string (first operands)) ":"))))))
 
 (define (emit instrs)
-  (let ((entry (caar instrs)))
+  (let ((entry (cadar instrs)))
     (begin
-      (print (string-append tab "global " (label->string 'entry)))
+      (print (string-append tab "global " (label->string entry)))
       (print (string-append tab "extern " (label->string 'error)))
       (print (string-append tab "section .text"))
       (iter (compose print instr->string) instrs))))
