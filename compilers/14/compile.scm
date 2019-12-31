@@ -194,7 +194,7 @@
     ((equal? (first expr) 'call)
      (let ((e0 (first (rest expr)))
            (es (rest (rest expr))))
-       (compile-fun-tail-call e0 es env)))
+       (compile-tail-fun-call e0 es env)))
 
     (else (error "compile-tail/1"))))
 
@@ -275,6 +275,14 @@
        ;; Untag pointer
        (xor rax ,type-pair)
        (mov rax (offset rax 8)))))
+
+(define (compile-fun f env)
+  `((lea rax (offset ,f 0))
+    (mov (offset rdi 0) rax)
+    (mov rax rdi)
+    ;; Tag pointer as function
+    (_or rax ,type-fun)
+    (add rdi 8)))
 
 ;; (op e0 e1) => (let ((x e1)) (op e0 x))
 (define (compile-binary op e0 e1 env)
@@ -383,15 +391,6 @@
        ,@(move-args (length xs) (length env))
        (jmp (label ,f)))))
 
-;; Move n arguments up the stack by off slots
-(define (move-args n off)
-  (if (= n 0) '()
-    `(,@(move-args (sub1 n) off)
-       ;; Load from address [rsp - (n + off) * 8]
-       (mov rbx (offset rsp ,(- 0 (* (+ n off) 8))))
-       ;; Write to address [rsp - (n + off - off) * 8] = [rsp - n * 8]
-       (mov (offset rsp ,(- 0 (* n 8))) rbx))))
-
 (define (compile-args args env)
   (if (null? args) '()
     (let ((c0 (compile/1 (first args) env))
@@ -401,14 +400,16 @@
          (mov (offset rsp ,i) rax)
          ,@cs))))
 
-(define (compile-fun f env)
-  `((lea rax (offset ,f 0))
-    (mov (offset rdi 0) rax)
-    (mov rax rdi)
-    ;; Tag pointer as function
-    (_or rax ,type-fun)
-    (add rdi 8)))
+;; Move n arguments up the stack by off slots
+(define (move-args n off)
+  (if (= n 0) '()
+    `(,@(move-args (sub1 n) off)
+       ;; Load from address [rsp - (n + off) * 8]
+       (mov rbx (offset rsp ,(- 0 (* (+ n off) 8))))
+       ;; Write to address [rsp - (n + off - off) * 8] = [rsp - n * 8]
+       (mov (offset rsp ,(- 0 (* n 8))) rbx))))
 
+;; Compile a general function call in non-tail position
 (define (compile-fun-call e0 es env)
   (let ((c0 (compile/1 e0 env))
         (cs (compile-args es (cons #f env)))
@@ -425,7 +426,8 @@
        (call (offset rax 0))
        (add rsp ,sz))))
 
-(define (compile-fun-tail-call e0 es env)
+;; Compile a general function call in tail position
+(define (compile-tail-fun-call e0 es env)
   (let ((c0 (compile/1 e0 env))
         (cs (compile-args es (cons #f env)))
         (i (- 0 (* (add1 (length env)) 8))))
@@ -468,14 +470,12 @@
 (define assert-fun
   (assert-type (sub1 8) type-fun))
 
-(define registers '(rax rbx rdi rbp rsp))
-
 ;; Prefix label with an underscore (macOS)
 (define (label->string label)
   (string-append "_" label))
 
 (define (offset->string base off)
-  (if (member? base registers)
+  (if (member? base '(rax rbx rdi rbp rsp))
     ;; [Register + Integer]
     (string-append "[" base " + " off "]")
     ;; [Label + Integer]
