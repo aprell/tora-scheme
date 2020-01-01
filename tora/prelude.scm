@@ -57,6 +57,18 @@
 (define reverse (lambda (lst)
   (foldl (flip cons) '() lst)))
 
+(define remove (lambda (x lst)
+  (filter (lambda (y) (not (equal? x y))) lst)))
+
+(define remove-duplicates (lambda (lst)
+  (if (null? lst)
+      '()
+      (let ((hd (car lst))
+            (tl (cdr lst)))
+        (if (member? hd tl)
+            (remove-duplicates tl)
+            (cons hd (remove-duplicates tl)))))))
+
 ;; Higher-order functions
 
 (define iter (lambda (fn lst)
