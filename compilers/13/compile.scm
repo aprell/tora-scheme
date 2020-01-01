@@ -327,22 +327,16 @@
        ,@c1)))
 
 (define (compile-defines lst)
-  (let= loop ((defs lst)
-              (acc '()))
-        (if (null? defs) acc
-          (let ((expr (first defs)))
-            (let ((f (second expr))
-                  (xs (cadr (third expr)))
-                  (e0 (caddr (third expr))))
-              (loop
-                (cdr defs)
-                (append (compile-define f xs e0) acc)))))))
+  (foldl append '() (map compile-define lst)))
 
-(define (compile-define f xs e0)
-  (let ((c0 (compile-tail/1 e0 (reverse xs))))
-    `((,f) ;; TODO: (symbol->label f)
-      ,@c0
-      (ret))))
+(define (compile-define expr)
+  (let ((f (second expr))
+        (xs (cadr (third expr)))
+        (e0 (caddr (third expr))))
+    (let ((c0 (compile-tail/1 e0 (reverse xs))))
+      `((,f) ;; TODO: (symbol->label f)
+        ,@c0
+        (ret)))))
 
 ;; Compile a function call in non-tail position
 (define (compile-call f xs env)
