@@ -1,0 +1,7 @@
+(let ((Y (lambda (t)
+           ((lambda (f) (t (lambda (z) ((f f) z))))
+            (lambda (f) (t (lambda (z) ((f f) z))))))))
+  (let ((sum (lambda (f)
+               (lambda (n)
+                 (if (zero? n) 0 (+ n (f (sub1 n))))))))
+    ((Y sum) 10))) ;; => 55

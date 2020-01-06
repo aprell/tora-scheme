@@ -1,0 +1,12 @@
+(begin
+
+  (define (fib n)
+    (if (zero? n)
+        0
+        (let ((n-1 (sub1 n)))
+          (let ((n-2 (sub1 n-1)))
+            (if (zero? n-1)
+                1
+                (+ (fib n-1) (fib n-2)))))))
+
+  (fib 20)) ;; => 6765
