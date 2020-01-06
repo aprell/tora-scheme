@@ -8,7 +8,7 @@
   '(+ - cons))
 
 (define all-primitives
-  `(,@unary-primitives ,@binary-primitives if let letrec))
+  `(,@unary-primitives ,@binary-primitives if let letrec begin define))
 
 (define (immediate? expr)
   (or (number? expr) (or (boolean? expr) (equal? expr '()))))
@@ -57,6 +57,16 @@
             (and (all (lambda (def) (expr-lambda? (second def))) defs)
               (expr? e)))))
 
+    ;; (begin
+    ;;   (define (f0 ...) e0)
+    ;;   (define (f1 ...) e1)
+    ;;   ...
+    ;;   e)
+    ((equal? (first expr) 'begin)
+     (let ((expr-and-defs (reverse (rest expr))))
+       (and (expr? (first expr-and-defs))
+            (all expr-define? (rest expr-and-defs)))))
+
     ;; (lambda (x ...) e0)
     (((binary? 'lambda) expr) (expr-lambda? expr))
 
@@ -64,11 +74,81 @@
       ;; Function application: (e0 ...)
       (and (expr? (first expr)) (all expr? (rest expr))))))
 
+;; (define (f0 ...) e0) is desugared to
+;; (define f0 (lambda (...) e0))
+(define (expr-define? expr)
+  (if (not ((binary? 'define) expr)) #f
+    (and (variable? (second expr)) (expr-lambda? (third expr)))))
+
 (define (expr-lambda? expr)
   (if (not ((binary? 'lambda) expr)) #f
     (let ((xs (second expr))
           (e0 (third expr)))
       (and (all variable? xs) (expr? e0)))))
+
+(define (desugar expr)
+  (cond
+    ((immediate? expr) expr)
+    ((variable? expr) expr)
+
+    ((unary-primitive? expr)
+     (let ((op (first expr))
+           (e0 (second expr)))
+       `(,op ,(desugar e0))))
+
+    ;; (+ e0 e1) | (- e0 e1) | (cons e0 e1)
+    ((binary-primitive? expr)
+     (let ((op (first expr))
+           (e0 (second expr))
+           (e1 (third expr)))
+       `(,op ,(desugar e0) ,(desugar e1))))
+
+    ;; (if e0 e1 e2)
+    (((ternary? 'if) expr)
+     (let ((e0 (second expr))
+           (e1 (third expr))
+           (e2 (fourth expr)))
+       `(if ,(desugar e0) ,(desugar e1) ,(desugar e2))))
+
+    ;; (let ((id e0)) e1)
+    (((binary? 'let) expr)
+     (let ((id (caar (second expr)))
+           (e0 (cadar (second expr)))
+           (e1 (third expr)))
+       `(let ((,id ,(desugar e0))) ,(desugar e1))))
+
+    ;; (letrec ((f0 e0) ...) e)
+    (((binary? 'letrec) expr)
+     (let ((defs (second expr))
+           (e (third expr)))
+       `(letrec (,@(map (lambda (def)
+                          `(,(first def) ,(desugar (second def)))) defs))
+          ,(desugar e))))
+
+    ;; (begin
+    ;;   (define (f0 ...) e0)
+    ;;   (define (f1 ...) e1)
+    ;;   ...
+    ;;   e)
+    ((equal? (first expr) 'begin)
+     (let ((expr-and-defs (reverse (rest expr))))
+       (let ((e (first expr-and-defs))
+             (defs (reverse (rest expr-and-defs))))
+         `(letrec ,(map (lambda (def)
+                          `(,(second def) ,(desugar (third def)))) defs)
+            ,(desugar e)))))
+
+    ;; (lambda (x ...) e0)
+    (((binary? 'lambda) expr)
+     (let ((xs (second expr))
+           (e0 (third expr)))
+       `(lambda ,xs ,(desugar e0))))
+
+    (else
+      ;; Function application: (e0 ...)
+      (let ((e0 (first expr))
+            (es (rest expr)))
+        `(,(desugar e0) ,@(map desugar es))))))
 
 (define new-label (gensym 0))
 
@@ -247,7 +327,7 @@
     (remove-duplicates (free-variables expr))))
 
 (define (compile expr)
-  (let ((labeled-expr (label-lambdas expr)))
+  (let ((labeled-expr (label-lambdas (desugar expr))))
     (let ((lambdas (collect-lambdas labeled-expr)))
       `((label entry)
         ,@(compile-tail/1 labeled-expr '())
