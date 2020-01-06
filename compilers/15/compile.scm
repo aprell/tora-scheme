@@ -8,7 +8,7 @@
   '(+ - cons))
 
 (define all-primitives
-  `(,@unary-primitives ,@binary-primitives if let))
+  `(,@unary-primitives ,@binary-primitives if let letrec))
 
 (define (immediate? expr)
   (or (number? expr) (or (boolean? expr) (equal? expr '()))))
@@ -49,15 +49,26 @@
            (e1 (third expr)))
        (and (variable? id) (and (expr? e0) (expr? e1)))))
 
+    ;; (letrec ((f0 e0) ...) e)
+    (((binary? 'letrec) expr)
+     (let ((defs (second expr))
+           (e (third expr)))
+       (and (all (lambda (def) (variable? (first def))) defs)
+            (and (all (lambda (def) (expr-lambda? (second def))) defs)
+              (expr? e)))))
+
     ;; (lambda (x ...) e0)
-    (((binary? 'lambda) expr)
-     (let ((xs (second expr))
-           (e0 (third expr)))
-       (and (all variable? xs) (expr? e0))))
+    (((binary? 'lambda) expr) (expr-lambda? expr))
 
     (else
       ;; Function application: (e0 ...)
       (and (expr? (first expr)) (all expr? (rest expr))))))
+
+(define (expr-lambda? expr)
+  (if (not ((binary? 'lambda) expr)) #f
+    (let ((xs (second expr))
+          (e0 (third expr)))
+      (and (all variable? xs) (expr? e0)))))
 
 (define new-label (gensym 0))
 
@@ -91,6 +102,14 @@
            (e0 (cadar (second expr)))
            (e1 (third expr)))
        `(let ((,id ,(label-lambdas e0))) ,(label-lambdas e1))))
+
+    ;; (letrec ((f0 e0) ...) e)
+    (((binary? 'letrec) expr)
+     (let ((defs (second expr))
+           (e (third expr)))
+       `(letrec (,@(map (lambda (def)
+                          `(,(first def) ,(label-lambdas (second def)))) defs))
+          ,(label-lambdas e))))
 
     ;; (lambda (x ...) e0)
     (((binary? 'lambda) expr)
@@ -139,6 +158,15 @@
            (e1 (third expr)))
        (append (collect-lambdas e0)
                (collect-lambdas e1))))
+
+    ;; (letrec ((f0 e0) ...) e)
+    (((binary? 'letrec) expr)
+     (let ((defs (second expr))
+           (e (third expr)))
+       (append (foldl append '()
+                      (map (lambda (def)
+                             (collect-lambdas (second def))) defs))
+               (collect-lambdas e))))
 
     ;; (lambda f (x ...) e0)
     (((ternary? 'lambda) expr)
@@ -191,6 +219,16 @@
                (e1 (third expr)))
            (append (free-variables e0)
                    (remove id (free-variables e1)))))
+
+        ;; (letrec ((f0 e0) ...) e)
+        (((binary? 'letrec) expr)
+         (let ((defs (second expr))
+               (e (third expr)))
+           (append (foldl append '()
+                          (map (lambda (def)
+                                 (free-variables (second def))) defs))
+                   (foldl (lambda (acc x)
+                            (remove (first x) acc)) (free-variables e) defs))))
 
         ;; (lambda f (x ...) e0)
         (((ternary? 'lambda) expr)
@@ -251,6 +289,13 @@
            (e1 (third expr)))
        (compile-let id e0 e1 env)))
 
+    ;; (letrec ((f0 e0) ...) e)
+    (((binary? 'letrec) expr)
+     (let ((fs (map first (second expr)))
+           (es (map second (second expr)))
+           (e (third expr)))
+       (compile-letrec fs es e env)))
+
     ;; (lambda f (x ...) e0)
     (((ternary? 'lambda) expr)
      (let ((f (second expr))
@@ -295,6 +340,13 @@
            (e0 (cadar (second expr)))
            (e1 (third expr)))
        (compile-tail-let id e0 e1 env)))
+
+    ;; (letrec ((f0 e0) ...) e)
+    (((binary? 'letrec) expr)
+     (let ((fs (map first (second expr)))
+           (es (map second (second expr)))
+           (e (third expr)))
+       (compile-tail-letrec fs es e env)))
 
     ;; (lambda f (x ...) e0)
     (((ternary? 'lambda) expr)
@@ -458,6 +510,52 @@
     `(,@c0
        (mov (offset rsp ,i) rax)
        ,@c1)))
+
+(define (compile-letrec fs es e env)
+  (let ((c0 (compile-letrec-lambdas es env))
+        (c1 (compile-letrec-init fs es (append (reverse fs) env)))
+        (c2 (compile/1 e (append (reverse fs) env))))
+    `(,@c0
+       ,@c1
+       ,@c2)))
+
+(define (compile-tail-letrec fs es e env)
+  (let ((c0 (compile-letrec-lambdas es env))
+        (c1 (compile-letrec-init fs es (append (reverse fs) env)))
+        (c2 (compile-tail/1 e (append (reverse fs) env))))
+    `(,@c0
+       ,@c1
+       ,@c2)))
+
+(define (compile-letrec-lambdas es env)
+  (if (null? es) '()
+    (let ((ys (free-variables (first es)))
+          (cs (compile-letrec-lambdas (rest es) (cons #f env))))
+      `(;; Save function pointer
+        (lea rax (offset ,(second (first es)) 0))
+        (mov (offset rdi 0) rax)
+        ;; Save number of free variables
+        (mov rax ,(length ys))
+        (mov (offset rdi 8) rax)
+        (mov rax rdi)
+        ;; Tag pointer as function
+        (_or rax ,type-fun)
+        (add rdi ,(* (+ (length ys) 2) 8))
+        ;; Push closure pointer onto stack
+        (mov (offset rsp ,(- 0 (* (add1 (length env)) 8))) rax)
+        ,@cs))))
+
+(define (compile-letrec-init fs es env)
+  (if (null? fs) '()
+    (let ((ys (free-variables (first es)))
+          (cs (compile-letrec-init (rest fs) (rest es) env)))
+      `((mov r9 (offset rsp ,(- 0 (* (lookup (first fs) env) 8))))
+        ;; Untag pointer
+        (xor r9 ,type-fun)
+        (add r9 16)
+        ;; Capture free variables
+        ,@(copy-env-to-heap ys env)
+        ,@cs))))
 
 (define (compile-lambda-definitions lst)
   (foldl append '() (map compile-lambda-definition lst)))
