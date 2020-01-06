@@ -632,6 +632,7 @@
       `((mov r9 (offset rsp ,(- 0 (* (lookup (first fs) env) 8))))
         ;; Untag pointer
         (xor r9 ,type-fun)
+        ;; Move past label and number of free variables
         (add r9 16)
         ;; Capture free variables
         ,@(copy-env-to-heap ys env)
