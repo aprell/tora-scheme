@@ -1,8 +1,8 @@
-local Env = require "tora.env"
-local util = require "tora.util"
-local map, slice, raise = util.map, util.slice, util.raise
+local Env = require "src.env"
+local utils = require "src.utils"
+local map, slice, raise = utils.map, utils.slice, utils.raise
 local unpack = unpack or table.unpack
-local mt = {__index = util}
+local mt = {__index = utils}
 
 function tora_string(s)
 	return "\"" .. s .. "\""

@@ -10,7 +10,7 @@ The interpreter is written in Lua. With Lua installed, you can start an
 interactive REPL
 
 ```
-./tora.lua
+./tora
 λ> (print "Hello World!")
 "Hello World!"
 ```
@@ -18,13 +18,13 @@ interactive REPL
 or interpret the contents of a file
 
 ```
-./tora.lua examples/guess.scm
+./tora examples/guess.scm
 ```
 
 Loading a file with `-l` brings the definitions into scope:
 
 ```
-./tora.lua -l tora/prelude.scm
+./tora -l src/prelude.scm
 λ> (sum '(1 2 3))
 6
 ```

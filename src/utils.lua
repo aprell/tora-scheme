@@ -1,8 +1,8 @@
-local util = {}
+local utils = {}
 
 -- Applies a function to every element of an array
 -- Shares metatable with original array
-function util.map(t, fn)
+function utils.map(t, fn)
 	local m = {}
 	for _, v in ipairs(t) do
 		table.insert(m, (fn(v)))
@@ -14,7 +14,7 @@ end
 
 -- Returns a slice (copy) of an array or subarray
 -- Shares metatable with original array
-function util.slice(t, i, j)
+function utils.slice(t, i, j)
 	i = i or 1
 	j = j or #t
 	if j < 0 then j = j + #t + 1 end
@@ -29,9 +29,9 @@ function util.slice(t, i, j)
 end
 
 -- Raises an error with message err_msg
-function util.raise(err_msg)
+function utils.raise(err_msg)
 	local err_mt = {__tostring = function (err) return err.reason end}
 	return error(setmetatable({reason = err_msg}, err_mt))
 end
 
-return util
+return utils

@@ -1,14 +1,14 @@
 #!/usr/bin/env lua
 
-local core = require "tora.core"
-local Env = require "tora.env"
+local core = require "src.core"
+local Env = require "src.env"
 
 local diff = [[
 diff --old-line-format="F" --new-line-format="" --unchanged-line-format="." \
      __test__.expect __test__.out
 ]]
 
-core.eval(core.read([[(load "tora/macro.scm")]]))
+core.eval(core.read([[(load "src/macro.scm")]]))
 
 local tests = {"test/test"}
 for i = 1, #tests do

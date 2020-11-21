@@ -6,7 +6,7 @@
 ;;  https://www.leafac.com/prose/programming-language-theory-explained-for-the-working-programmer--principles-of-programming-languages
 ;; ---------------------------------------------------------------------------
 
-(load "tora/prelude.scm")
+(load "src/prelude.scm")
 
 ;; STARTING POINT
 

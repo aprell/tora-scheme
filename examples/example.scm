@@ -1,4 +1,4 @@
-(load "tora/prelude.scm")
+(load "src/prelude.scm")
 
 (define (fib n)
   (if (< n 2)

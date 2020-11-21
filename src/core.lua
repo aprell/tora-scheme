@@ -1,7 +1,7 @@
-local builtin = require "tora.builtin"
-local Env = require "tora.env"
-local util = require "tora.util"
-local map, slice, raise = util.map, util.slice, util.raise
+local builtin = require "src.builtin"
+local Env = require "src.env"
+local utils = require "src.utils"
+local map, slice, raise = utils.map, utils.slice, utils.raise
 local show = builtin.core.show
 local unpack = unpack or table.unpack
 
@@ -22,7 +22,7 @@ local function parse()
 	local function inc() depth = depth + 1; return depth end
 	local function dec() depth = depth - 1; return depth end
 
-	local mt = {__index = util}
+	local mt = {__index = utils}
 	local function mk(ast) return setmetatable(ast, mt) end
 
 	local number = C (S "+-" ^ -1 * num ^ 1 * (P "." * num ^ 0) ^ -1) / tonumber

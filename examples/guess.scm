@@ -1,4 +1,4 @@
-(load "tora/prelude.scm")
+(load "src/prelude.scm")
 
 (define random-init
   "lua () math.randomseed(os.time()) end")

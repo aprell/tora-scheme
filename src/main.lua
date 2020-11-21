@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 
-local core = require "tora.core"
+local core = require "src.core"
 local read, eval, println = core.read, core.eval, core.println
 
 local usage = [[
@@ -41,7 +41,7 @@ local function repl(prompt)
 end
 
 local function main(...)
-	eval(read([[(load "tora/macro.scm")]]))
+	eval(read([[(load "src/macro.scm")]]))
 	if #arg > 0 then
 		if arg[1] == "-l" then
 			table.remove(arg, 1)
