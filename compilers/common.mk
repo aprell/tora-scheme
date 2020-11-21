@@ -11,7 +11,7 @@ LDFLAGS += -fsanitize=address,undefined
 
 .PRECIOUS: %.s
 %.s: compile.scm %.input
-	./tora.lua $^ > $@
+	./tora $^ > $@
 
 .PHONY: clean
 clean::

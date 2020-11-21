@@ -1,4 +1,4 @@
-(load "tora/prelude.scm")
+(load "src/prelude.scm")
 (load "../common.scm")
 
 (define unary-primitives
