@@ -80,7 +80,7 @@ local function symbol(x)
 end
 
 -- Macros live in a separate environment
-local macro = Env.new()
+local macro = Env()
 
 local function macrocall(x)
 	return symbol(x) and Env.lookup(macro, x) ~= nil
@@ -201,7 +201,7 @@ eval_list = function (x, env)
 		return x[#x]
 	elseif x[1] == "let" or x[1] == "letrec" then
 		local binds, body = x[2], x[3]
-		local scope = Env.new(env)
+		local scope = Env(env)
 		for i = 1, #binds do
 			local id, exp = binds[i][1], binds[i][2]
 			if x[1] == "let" then
@@ -215,7 +215,7 @@ eval_list = function (x, env)
 		return function (...)
 			local params, body = x[2], x[3]
 			local args = {...}
-			local scope = Env.new(env)
+			local scope = Env(env)
 			if #args ~= #params then
 				raise("eval: number of arguments doesn't match number of formal parameters")
 			end

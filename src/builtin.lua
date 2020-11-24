@@ -36,7 +36,7 @@ local function show(a)
 	end
 end
 
-local builtin = Env.new()
+local builtin = Env()
 
 for sym, val in pairs {
 
