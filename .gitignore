@@ -1,1 +1,2 @@
 test/*.out.actual
+test/*.out.expect
