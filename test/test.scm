@@ -1,4 +1,4 @@
-;; Core
+;; ----- Core -----
 
 (print 42)
 (print -5)
@@ -17,12 +17,31 @@
 (print foo->bar->baz)
 (print foo.bar)
 (print foo.bar.baz)
-(newline)
+
+;; CHECK: 42
+;; CHECK: -5
+;; CHECK: 3.141592654
+;; CHECK: -2.71828
+;; CHECK: Hello Scheme!
+;; CHECK: #t
+;; CHECK: #f
+;; CHECK: nil
+;; CHECK: nil
+;; CHECK: nil
+;; CHECK: nil
+;; CHECK: nil
+;; CHECK: nil
+;; CHECK: nil
+;; CHECK: nil
+;; CHECK: nil
+;; CHECK: nil
 
 (begin
   (define x 1)
   (define y (+ x 1))
   (print (+ x y)))
+
+;; CHECK: 3
 
 (define (times42 x) (* x 42))
 
@@ -31,9 +50,13 @@
   (set! x (times42 x))
   (print x))
 
+;; CHECK: 42
+
 (if (= x 42)
   (print #t)
   (print #f))
+
+;; CHECK: #t
 
 (if (> 1 2)
   (print "Huh?!"))
@@ -49,7 +72,11 @@
 (print (rating 1))
 (print (rating 3))
 (print (rating 5))
-(newline)
+
+;; CHECK: invalid
+;; CHECK: bad
+;; CHECK: okay
+;; CHECK: perfect
 
 (print
   (let ((a 1)
@@ -57,11 +84,15 @@
         (c 3))
     (list a b c)))
 
+;; CHECK: (1 2 3)
+
 (print
   (let ((a 1)
         (b 2)
         (c a)) ; no runtime error, evaluates to nil
     (list a b c)))
+
+;; CHECK: (1 2)
 
 (print
   (let ((a 1)
@@ -69,11 +100,15 @@
     (let ((c a))
       (list a b c))))
 
+;; CHECK: (1 2 1)
+
 (print
   (letrec ((a 1)
            (b (+ a 1))
            (c (+ b 1)))
     (list a b c)))
+
+;; CHECK: (1 2 3)
 
 (print
   (let ((a "foo")
@@ -82,12 +117,16 @@
           (b a))
       (list a b))))
 
+;; CHECK: (bar foo)
+
 (print
   (letrec ((a "foo")
            (b "bar"))
     (letrec ((a b)
              (b a))
       (list a b))))
+
+;; CHECK: (bar bar)
 
 (print
   (let ((xs
@@ -102,9 +141,9 @@
             ys)))
     (equal? xs ys)))
 
-(newline)
+;; CHECK: #t
 
-;; quote/quasiquote
+;; ----- quote/quasiquote -----
 
 (print '1.23)
 (print '#t)
@@ -114,7 +153,15 @@
 (print '(quote foo))
 (print '(f o o))
 (print '(1 2 '(3 4 5)))
-(newline)
+
+;; CHECK: 1.23
+;; CHECK: #t
+;; CHECK: foo
+;; CHECK: foo.bar
+;; CHECK: foo.bar.baz
+;; CHECK: (quote foo)
+;; CHECK: (f o o)
+;; CHECK: (1 2 (quote (3 4 5)))
 
 (print `1.23)
 (print `#t)
@@ -122,14 +169,25 @@
 (print `(quasiquote foo))
 (print `(f o o))
 (print `(1 2 `(3 4 5)))
-(newline)
+
+;; CHECK: 1.23
+;; CHECK: #t
+;; CHECK: foo
+;; CHECK: (quasiquote foo)
+;; CHECK: (f o o)
+;; CHECK: (1 2 (quasiquote (3 4 5)))
 
 (print (= 'a `a))
 (print (= 'a `,a))
 (print (equal? '(1 2 3) `(1 2 3)))
 (print (equal? '(1 2 (+ 1 2)) `(1 2 (+ 1 2))))
 (print (equal? (list 1 2 (+ 1 2)) `(1 2 ,(+ 1 2))))
-(newline)
+
+;; CHECK: #t
+;; CHECK: #f
+;; CHECK: #t
+;; CHECK: #t
+;; CHECK: #t
 
 (print `(1 2 ,@(list 3 4) 5))
 (print `(a 1 2 ,(+ 1 2) ,@(list 4 5) b))
@@ -137,15 +195,25 @@
 (print (letrec ((x '(3 4 5)) (y `(1 2 ,@x))) `(length of y is ,(length y))))
 (print `(1 `,(+ 1 ,(+ 2 3)) 4))
 (print `(1 ```,,@,,@(list (+ 1 2)) 4))
-(newline)
 
-;; Built-ins
+;; CHECK: (1 2 3 4 5)
+;; CHECK: (a 1 2 3 4 5 b)
+;; CHECK: (x has the value 3)
+;; CHECK: (length of y is 5)
+;; CHECK: (1 (quasiquote (unquote (+ 1 5))) 4)
+;; CHECK: (1 (quasiquote (quasiquote (quasiquote (unquote (unquote-splicing (unquote 3)))))) 4)
+
+;; ----- Built-ins -----
 
 (print (+ 1 2))
 (print (- 4 3))
 (print (* 5 4))
 (print (/ 1 2))
-(newline)
+
+;; CHECK: 3
+;; CHECK: 1
+;; CHECK: 20
+;; CHECK: 0.5
 
 (print (= 1 1))
 (print (= 2 3))
@@ -157,7 +225,17 @@
 (print (>= 7 8))
 (print (<= 8 8))
 (print (<= 9 8))
-(newline)
+
+;; CHECK: #t
+;; CHECK: #f
+;; CHECK: #f
+;; CHECK: #t
+;; CHECK: #t
+;; CHECK: #f
+;; CHECK: #t
+;; CHECK: #f
+;; CHECK: #t
+;; CHECK: #f
 
 (print (and #t #t))
 (print (and #t #f))
@@ -171,33 +249,61 @@
 (print (or #t (error)))
 (print (not #t))
 (print (not #f))
-(newline)
+
+;; CHECK: #t
+;; CHECK: #f
+;; CHECK: #f
+;; CHECK: #f
+;; CHECK: #f
+;; CHECK: #t
+;; CHECK: #t
+;; CHECK: #t
+;; CHECK: #f
+;; CHECK: #t
+;; CHECK: #f
+;; CHECK: #t
 
 (print (list))
 (print (list 1 2 (+ 1 2)))
 (print (list 1 (list 2 (list 3))))
-(newline)
+
+;; CHECK: ()
+;; CHECK: (1 2 3)
+;; CHECK: (1 (2 (3)))
 
 (print (cons 1 '()))
 (print (cons 'a '(b c)))
 (print (cons (list 1) '(2 3)))
-(newline)
+
+;; CHECK: (1)
+;; CHECK: (a b c)
+;; CHECK: ((1) 2 3)
 
 (print (car '()))
 (print (car '(1 2 3)))
 (print (car '((a b c) e d f)))
-(newline)
+
+;; CHECK: nil
+;; CHECK: 1
+;; CHECK: (a b c)
 
 (print (cdr '()))
 (print (cdr '(1)))
 (print (cdr '(a b c (e d f))))
-(newline)
+
+;; CHECK: ()
+;; CHECK: ()
+;; CHECK: (b c (e d f))
 
 (print (length '()))
 (print (length '(1)))
 (print (length '(1 (2))))
 (print (length (list 'a 'b 'c)))
-(newline)
+
+;; CHECK: 0
+;; CHECK: 1
+;; CHECK: 2
+;; CHECK: 3
 
 (print (number? 1))
 (print (number? 1.2))
@@ -214,25 +320,52 @@
 (print (lambda? 42))
 (print (lambda? times42))
 (print (lambda? +))
-(newline)
+
+;; CHECK: #t
+;; CHECK: #t
+;; CHECK: #f
+;; CHECK: #t
+;; CHECK: #t
+;; CHECK: #f
+;; CHECK: #t
+;; CHECK: #t
+;; CHECK: #f
+;; CHECK: #f
+;; CHECK: #t
+;; CHECK: #t
+;; CHECK: #f
+;; CHECK: #t
+;; CHECK: #t
 
 (print (list? 1))
 (print (list? "list"))
 (print (list? '()))
 (print (list? '(1 2 3)))
-(newline)
+
+;; CHECK: #f
+;; CHECK: #f
+;; CHECK: #t
+;; CHECK: #t
 
 (print (null? 'a))
 (print (null? "list"))
 (print (null? '()))
 (print (null? '(1 2 3)))
-(newline)
+
+;; CHECK: #f
+;; CHECK: #f
+;; CHECK: #t
+;; CHECK: #f
 
 (print (pair? 3))
 (print (pair? "pair"))
 (print (pair? '()))
 (print (pair? '(1 2 3)))
-(newline)
+
+;; CHECK: #f
+;; CHECK: #f
+;; CHECK: #f
+;; CHECK: #t
 
 (print (equal? 1 2))
 (print (equal? (+ 1 2) 3))
@@ -244,19 +377,37 @@
 (print (equal? '(1 2 3) '(1 2)))
 (print (equal? '(a b c) '(a b c d)))
 (print (equal? '(a b (c)) (list 'a 'b (list 'c))))
-(newline)
+
+;; CHECK: #f
+;; CHECK: #t
+;; CHECK: #f
+;; CHECK: #f
+;; CHECK: #t
+;; CHECK: #t
+;; CHECK: #t
+;; CHECK: #f
+;; CHECK: #f
+;; CHECK: #t
 
 (define x (read "(lambda (x) (* x 100))"))
 (print ((eval x) 3))
 
+;; CHECK: 300
+
 (define y '(* (length (list 'quoted 'list)) 200))
 (print (eval y))
+
+;; CHECK: 400
 
 (print (read "(lambda () #t)"))
 (print (read "(lambda () '#f)"))
 (print (read "(define (a) 'b)"))
 (print (read "(define (a x y) '(b))"))
-(newline)
+
+;; CHECK: (lambda () #t)
+;; CHECK: (lambda () (quote #f))
+;; CHECK: (define a (lambda () (quote b)))
+;; CHECK: (define a (lambda (x y) (quote (b))))
 
 (print (string? (show 1)))
 (print (string? (show #t)))
@@ -264,16 +415,27 @@
 (print (string? (show (+ 1 2))))
 (print (show (list 'a 'b 'c)))
 (print (show (read "(define (a x y) '(b))")))
-(newline)
+
+;; CHECK: #t
+;; CHECK: #t
+;; CHECK: #t
+;; CHECK: #t
+;; CHECK: (a b c)
+;; CHECK: (define a (lambda (x y) (quote (b))))
 
 (print (string? (string-append "abc")))
 (print (string-append "foo" "bar"))
 (print (string-append (show 1) (show '+) (show 2) (show '=) (show (+ 1 2))))
 (print (string-append 2 '+ 3 '= (+ 2 3))) ; show is called implicitly
 (print (string-append "List of arguments of length " (length argv) ": " argv))
-(newline)
 
-;; "FFI"
+;; CHECK: #t
+;; CHECK: foobar
+;; CHECK: 1+2=3
+;; CHECK: 2+3=5
+;; CHECK: List of arguments of length 1: (test/test.scm)
+
+;; ------ "FFI" ------
 
 (define lua "lua () return 1 end")
 (print (lua))
@@ -281,9 +443,12 @@
 (print (lua 1))
 (define lua "lua (a, b) return a + b end")
 (print (lua 1 2))
-(newline)
 
-;; Prelude
+;; CHECK: 1
+;; CHECK: 2
+;; CHECK: 3
+
+;; ----- Prelude -----
 
 (load "src/prelude.scm")
 
@@ -293,9 +458,8 @@
       (+ (fib (- n 1)) (fib (- n 2)))))
 
 (print (map fib (range 0 10 1)))
-(newline)
 
-;;
+;; CHECK: (0 1 1 2 3 5 8 13 21 34 55)
 
 (define (sqrt x)
   (sqrt-iter 1.0 x))
@@ -315,9 +479,8 @@
   (* 0.5 (+ x y)))
 
 (print (square (sqrt 42)))
-(newline)
 
-;;
+;; CHECK: 42.000000378937
 
 (define (countdown x)
   (lambda () (begin (set! x (- x 1)) x)))
@@ -325,9 +488,8 @@
 (define c3 (countdown 3))
 
 (print (begin (c3) (c3) (if (= (c3) 0) "Boom!")))
-(newline)
 
-;;
+;; CHECK: Boom!
 
 (define (plus x y)
   (let ((+ (lambda (x y)
@@ -337,9 +499,8 @@
     (+ x y)))
 
 (print (cons (plus 1 2) (plus '(4) '(5))))
-(newline)
 
-;;
+;; CHECK: (3 4 5)
 
 (define (even? n)
   (letrec ((is-even?
@@ -359,9 +520,11 @@
 (print (odd? 42))
 (print (even? 43))
 (print (odd? 43))
-(newline)
 
-;;
+;; CHECK: #t
+;; CHECK: #f
+;; CHECK: #f
+;; CHECK: #t
 
 (let= loop ((i 0)
             (l '()))
@@ -369,11 +532,15 @@
       (loop (+ i 1) (cons (fib i) l))
       (print l)))
 
+;; CHECK: (55 34 21 13 8 5 3 2 1 1 0)
+
 (let ((l '()))
   (begin
     (for i 0 10
          (set! l (cons (fib i) l)))
     (print l)))
+
+;; CHECK: (55 34 21 13 8 5 3 2 1 1 0)
 
 (define (sum-list lst)
   (let= loop ((acc 0)
@@ -382,9 +549,8 @@
           (else (loop (+ acc (car l)) (cdr l))))))
 
 (print (sum-list (range 1 100 1)))
-(newline)
 
-;;
+;; CHECK: 5050
 
 (define (simplify dir lst)
   (cond
@@ -399,3 +565,5 @@
     (reverse simplified-list)))
 
 (print (directions '(North South South East West North West)))
+
+;; CHECK: (West)
