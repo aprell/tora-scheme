@@ -1,40 +1,22 @@
 ;; ----- Core -----
 
-(print 42)
-(print -5)
-(print 3.141592654)
-(print -2.71828)
-(print "Hello Scheme!")
-(print #t)
-(print #f)
-(print foo)
-(print foo?)
-(print foo!)
-(print foo=)
-(print foo-bar)
-(print foo/bar)
-(print foo->bar)
-(print foo->bar->baz)
-(print foo.bar)
-(print foo.bar.baz)
-
-;; CHECK: 42
-;; CHECK: -5
-;; CHECK: 3.141592654
-;; CHECK: -2.71828
-;; CHECK: Hello Scheme!
-;; CHECK: #t
-;; CHECK: #f
-;; CHECK: nil
-;; CHECK: nil
-;; CHECK: nil
-;; CHECK: nil
-;; CHECK: nil
-;; CHECK: nil
-;; CHECK: nil
-;; CHECK: nil
-;; CHECK: nil
-;; CHECK: nil
+(print 42)               ;; CHECK: 42
+(print -5)               ;; CHECK: -5
+(print 3.141592654)      ;; CHECK: 3.141592654
+(print -2.71828)         ;; CHECK: -2.71828
+(print "Hello Scheme!")  ;; CHECK: Hello Scheme!
+(print #t)               ;; CHECK: #t
+(print #f)               ;; CHECK: #f
+(print foo)              ;; CHECK: nil
+(print foo?)             ;; CHECK: nil
+(print foo!)             ;; CHECK: nil
+(print foo=)             ;; CHECK: nil
+(print foo-bar)          ;; CHECK: nil
+(print foo/bar)          ;; CHECK: nil
+(print foo->bar)         ;; CHECK: nil
+(print foo->bar->baz)    ;; CHECK: nil
+(print foo.bar)          ;; CHECK: nil
+(print foo.bar.baz)      ;; CHECK: nil
 
 (begin
   (define x 1)
@@ -68,15 +50,10 @@
         ((= x 5) "perfect")
         (else    "invalid")))
 
-(print (rating -3))
-(print (rating 1))
-(print (rating 3))
-(print (rating 5))
-
-;; CHECK: invalid
-;; CHECK: bad
-;; CHECK: okay
-;; CHECK: perfect
+(print (rating -3))  ;; CHECK: invalid
+(print (rating 1))   ;; CHECK: bad
+(print (rating 3))   ;; CHECK: okay
+(print (rating 5))   ;; CHECK: perfect
 
 (print
   (let ((a 1)
@@ -145,49 +122,27 @@
 
 ;; ----- quote/quasiquote -----
 
-(print '1.23)
-(print '#t)
-(print 'foo)
-(print 'foo.bar)
-(print 'foo.bar.baz)
-(print '(quote foo))
-(print '(f o o))
-(print '(1 2 '(3 4 5)))
+(print '1.23)              ;; CHECK: 1.23
+(print '#t)                ;; CHECK: #t
+(print 'foo)               ;; CHECK: foo
+(print 'foo.bar)           ;; CHECK: foo.bar
+(print 'foo.bar.baz)       ;; CHECK: foo.bar.baz
+(print '(quote foo))       ;; CHECK: (quote foo)
+(print '(f o o))           ;; CHECK: (f o o)
+(print '(1 2 '(3 4 5)))    ;; CHECK: (1 2 (quote (3 4 5)))
 
-;; CHECK: 1.23
-;; CHECK: #t
-;; CHECK: foo
-;; CHECK: foo.bar
-;; CHECK: foo.bar.baz
-;; CHECK: (quote foo)
-;; CHECK: (f o o)
-;; CHECK: (1 2 (quote (3 4 5)))
+(print `1.23)              ;; CHECK: 1.23
+(print `#t)                ;; CHECK: #t
+(print `foo)               ;; CHECK: foo
+(print `(quasiquote foo))  ;; CHECK: (quasiquote foo)
+(print `(f o o))           ;; CHECK: (f o o)
+(print `(1 2 `(3 4 5)))    ;; CHECK: (1 2 (quasiquote (3 4 5)))
 
-(print `1.23)
-(print `#t)
-(print `foo)
-(print `(quasiquote foo))
-(print `(f o o))
-(print `(1 2 `(3 4 5)))
-
-;; CHECK: 1.23
-;; CHECK: #t
-;; CHECK: foo
-;; CHECK: (quasiquote foo)
-;; CHECK: (f o o)
-;; CHECK: (1 2 (quasiquote (3 4 5)))
-
-(print (= 'a `a))
-(print (= 'a `,a))
-(print (equal? '(1 2 3) `(1 2 3)))
-(print (equal? '(1 2 (+ 1 2)) `(1 2 (+ 1 2))))
-(print (equal? (list 1 2 (+ 1 2)) `(1 2 ,(+ 1 2))))
-
-;; CHECK: #t
-;; CHECK: #f
-;; CHECK: #t
-;; CHECK: #t
-;; CHECK: #t
+(print (= 'a `a))                                    ;; CHECK: #t
+(print (= 'a `,a))                                   ;; CHECK: #f
+(print (equal? '(1 2 3) `(1 2 3)))                   ;; CHECK: #t
+(print (equal? '(1 2 (+ 1 2)) `(1 2 (+ 1 2))))       ;; CHECK: #t
+(print (equal? (list 1 2 (+ 1 2)) `(1 2 ,(+ 1 2))))  ;; CHECK: #t
 
 (print `(1 2 ,@(list 3 4) 5))
 (print `(a 1 2 ,(+ 1 2) ,@(list 4 5) b))
@@ -205,189 +160,98 @@
 
 ;; ----- Built-ins -----
 
-(print (+ 1 2))
-(print (- 4 3))
-(print (* 5 4))
-(print (/ 1 2))
+(print (+ 1 2))                     ;; CHECK: 3
+(print (- 4 3))                     ;; CHECK: 1
+(print (* 5 4))                     ;; CHECK: 20
+(print (/ 1 2))                     ;; CHECK: 0.5
 
-;; CHECK: 3
-;; CHECK: 1
-;; CHECK: 20
-;; CHECK: 0.5
+(print (= 1 1))                     ;; CHECK: #t
+(print (= 2 3))                     ;; CHECK: #f
+(print (> 6 7))                     ;; CHECK: #f
+(print (> 8 7))                     ;; CHECK: #t
+(print (< 7 8))                     ;; CHECK: #t
+(print (< 9 8))                     ;; CHECK: #f
+(print (>= 7 7))                    ;; CHECK: #t
+(print (>= 7 8))                    ;; CHECK: #f
+(print (<= 8 8))                    ;; CHECK: #t
+(print (<= 9 8))                    ;; CHECK: #f
 
-(print (= 1 1))
-(print (= 2 3))
-(print (> 6 7))
-(print (> 8 7))
-(print (< 7 8))
-(print (< 9 8))
-(print (>= 7 7))
-(print (>= 7 8))
-(print (<= 8 8))
-(print (<= 9 8))
+(print (and #t #t))                 ;; CHECK: #t
+(print (and #t #f))                 ;; CHECK: #f
+(print (and #f #t))                 ;; CHECK: #f
+(print (and #f #f))                 ;; CHECK: #f
+(print (and #f (error)))            ;; CHECK: #f
+(print (or #t #t))                  ;; CHECK: #t
+(print (or #t #f))                  ;; CHECK: #t
+(print (or #f #t))                  ;; CHECK: #t
+(print (or #f #f))                  ;; CHECK: #f
+(print (or #t (error)))             ;; CHECK: #t
+(print (not #t))                    ;; CHECK: #f
+(print (not #f))                    ;; CHECK: #t
 
-;; CHECK: #t
-;; CHECK: #f
-;; CHECK: #f
-;; CHECK: #t
-;; CHECK: #t
-;; CHECK: #f
-;; CHECK: #t
-;; CHECK: #f
-;; CHECK: #t
-;; CHECK: #f
+(print (list))                      ;; CHECK: ()
+(print (list 1 2 (+ 1 2)))          ;; CHECK: (1 2 3)
+(print (list 1 (list 2 (list 3))))  ;; CHECK: (1 (2 (3)))
 
-(print (and #t #t))
-(print (and #t #f))
-(print (and #f #t))
-(print (and #f #f))
-(print (and #f (error)))
-(print (or #t #t))
-(print (or #t #f))
-(print (or #f #t))
-(print (or #f #f))
-(print (or #t (error)))
-(print (not #t))
-(print (not #f))
+(print (cons 1 '()))                ;; CHECK: (1)
+(print (cons 'a '(b c)))            ;; CHECK: (a b c)
+(print (cons (list 1) '(2 3)))      ;; CHECK: ((1) 2 3)
 
-;; CHECK: #t
-;; CHECK: #f
-;; CHECK: #f
-;; CHECK: #f
-;; CHECK: #f
-;; CHECK: #t
-;; CHECK: #t
-;; CHECK: #t
-;; CHECK: #f
-;; CHECK: #t
-;; CHECK: #f
-;; CHECK: #t
+(print (car '()))                   ;; CHECK: nil
+(print (car '(1 2 3)))              ;; CHECK: 1
+(print (car '((a b c) e d f)))      ;; CHECK: (a b c)
 
-(print (list))
-(print (list 1 2 (+ 1 2)))
-(print (list 1 (list 2 (list 3))))
+(print (cdr '()))                   ;; CHECK: ()
+(print (cdr '(1)))                  ;; CHECK: ()
+(print (cdr '(a b c (e d f))))      ;; CHECK: (b c (e d f))
 
-;; CHECK: ()
-;; CHECK: (1 2 3)
-;; CHECK: (1 (2 (3)))
+(print (length '()))                ;; CHECK: 0
+(print (length '(1)))               ;; CHECK: 1
+(print (length '(1 (2))))           ;; CHECK: 2
+(print (length (list 'a 'b 'c)))    ;; CHECK: 3
 
-(print (cons 1 '()))
-(print (cons 'a '(b c)))
-(print (cons (list 1) '(2 3)))
+(print (number? 1))                 ;; CHECK: #t
+(print (number? 1.2))               ;; CHECK: #t
+(print (number? "3"))               ;; CHECK: #f
+(print (boolean? #t))               ;; CHECK: #t
+(print (boolean? #f))               ;; CHECK: #t
+(print (boolean? "#t"))             ;; CHECK: #f
+(print (string? "string?"))         ;; CHECK: #t
+(print (string? "two words"))       ;; CHECK: #t
+(print (string? 'string))           ;; CHECK: #f
+(print (symbol? "symbol?"))         ;; CHECK: #f
+(print (symbol? 'symbol))           ;; CHECK: #t
+(print (symbol? '+))                ;; CHECK: #t
+(print (lambda? 42))                ;; CHECK: #f
+(print (lambda? times42))           ;; CHECK: #t
+(print (lambda? +))                 ;; CHECK: #t
 
-;; CHECK: (1)
-;; CHECK: (a b c)
-;; CHECK: ((1) 2 3)
+(print (list? 1))                   ;; CHECK: #f
+(print (list? "list"))              ;; CHECK: #f
+(print (list? '()))                 ;; CHECK: #t
+(print (list? '(1 2 3)))            ;; CHECK: #t
 
-(print (car '()))
-(print (car '(1 2 3)))
-(print (car '((a b c) e d f)))
+(print (null? 'a))                  ;; CHECK: #f
+(print (null? "list"))              ;; CHECK: #f
+(print (null? '()))                 ;; CHECK: #t
+(print (null? '(1 2 3)))            ;; CHECK: #f
 
-;; CHECK: nil
-;; CHECK: 1
-;; CHECK: (a b c)
+(print (pair? 3))                   ;; CHECK: #f
+(print (pair? "pair"))              ;; CHECK: #f
+(print (pair? '()))                 ;; CHECK: #f
+(print (pair? '(1 2 3)))            ;; CHECK: #t
 
-(print (cdr '()))
-(print (cdr '(1)))
-(print (cdr '(a b c (e d f))))
+(print (equal? 1 2))                ;; CHECK: #f
+(print (equal? (+ 1 2) 3))          ;; CHECK: #t
+(print (equal? #t #f))              ;; CHECK: #f
+(print (equal? 'a 'b))              ;; CHECK: #f
+(print (equal? "equal?" "equal?"))  ;; CHECK: #t
+(print (equal? '() '()))            ;; CHECK: #t
+(print (equal? '(1 + 2) '(1 + 2)))  ;; CHECK: #t
+(print (equal? '(1 2 3) '(1 2)))    ;; CHECK: #f
 
-;; CHECK: ()
-;; CHECK: ()
-;; CHECK: (b c (e d f))
-
-(print (length '()))
-(print (length '(1)))
-(print (length '(1 (2))))
-(print (length (list 'a 'b 'c)))
-
-;; CHECK: 0
-;; CHECK: 1
-;; CHECK: 2
-;; CHECK: 3
-
-(print (number? 1))
-(print (number? 1.2))
-(print (number? "3"))
-(print (boolean? #t))
-(print (boolean? #f))
-(print (boolean? "#t"))
-(print (string? "string?"))
-(print (string? "two words"))
-(print (string? 'string))
-(print (symbol? "symbol?"))
-(print (symbol? 'symbol))
-(print (symbol? '+))
-(print (lambda? 42))
-(print (lambda? times42))
-(print (lambda? +))
-
-;; CHECK: #t
-;; CHECK: #t
-;; CHECK: #f
-;; CHECK: #t
-;; CHECK: #t
-;; CHECK: #f
-;; CHECK: #t
-;; CHECK: #t
-;; CHECK: #f
-;; CHECK: #f
-;; CHECK: #t
-;; CHECK: #t
-;; CHECK: #f
-;; CHECK: #t
-;; CHECK: #t
-
-(print (list? 1))
-(print (list? "list"))
-(print (list? '()))
-(print (list? '(1 2 3)))
-
-;; CHECK: #f
-;; CHECK: #f
-;; CHECK: #t
-;; CHECK: #t
-
-(print (null? 'a))
-(print (null? "list"))
-(print (null? '()))
-(print (null? '(1 2 3)))
-
-;; CHECK: #f
-;; CHECK: #f
-;; CHECK: #t
-;; CHECK: #f
-
-(print (pair? 3))
-(print (pair? "pair"))
-(print (pair? '()))
-(print (pair? '(1 2 3)))
-
-;; CHECK: #f
-;; CHECK: #f
-;; CHECK: #f
-;; CHECK: #t
-
-(print (equal? 1 2))
-(print (equal? (+ 1 2) 3))
-(print (equal? #t #f))
-(print (equal? 'a 'b))
-(print (equal? "equal?" "equal?"))
-(print (equal? '() '()))
-(print (equal? '(1 + 2) '(1 + 2)))
-(print (equal? '(1 2 3) '(1 2)))
-(print (equal? '(a b c) '(a b c d)))
-(print (equal? '(a b (c)) (list 'a 'b (list 'c))))
-
-;; CHECK: #f
-;; CHECK: #t
-;; CHECK: #f
-;; CHECK: #f
-;; CHECK: #t
-;; CHECK: #t
-;; CHECK: #t
-;; CHECK: #f
-;; CHECK: #f
-;; CHECK: #t
+(print (equal? '(a b c) '(a b c d)))                ;; CHECK: #f
+(print (equal? '(a b (c)) (list 'a 'b (list 'c))))  ;; CHECK: #t
 
 (define x (read "(lambda (x) (* x 100))"))
 (print ((eval x) 3))
@@ -439,13 +303,17 @@
 
 (define lua "lua () return 1 end")
 (print (lua))
+
+;; CHECK: 1
+
 (define lua "lua (a) return a + 1 end")
 (print (lua 1))
+
+;; CHECK: 2
+
 (define lua "lua (a, b) return a + b end")
 (print (lua 1 2))
 
-;; CHECK: 1
-;; CHECK: 2
 ;; CHECK: 3
 
 ;; ----- Prelude -----
@@ -516,15 +384,10 @@
 (define (odd? n)
   (not (even? n)))
 
-(print (even? 42))
-(print (odd? 42))
-(print (even? 43))
-(print (odd? 43))
-
-;; CHECK: #t
-;; CHECK: #f
-;; CHECK: #f
-;; CHECK: #t
+(print (even? 42))  ;; CHECK: #t
+(print (odd? 42))   ;; CHECK: #f
+(print (even? 43))  ;; CHECK: #f
+(print (odd? 43))   ;; CHECK: #t
 
 (let= loop ((i 0)
             (l '()))
