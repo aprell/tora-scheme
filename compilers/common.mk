@@ -6,7 +6,7 @@ CPPFLAGS += -I..
 # Assemble
 AS := nasm
 
-UNAME_S != uname -s
+UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S), Darwin)
   CPPFLAGS += -D'GLOBAL(name)=name'
   ASFLAGS += -fmacho64
