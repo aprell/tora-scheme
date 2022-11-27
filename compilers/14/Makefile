@@ -1,6 +1,8 @@
 test: test.o runtime.o
 
+check: test
+
 clean::
-	rm -f test
+	$(RM) test
 
 include ../common.mk

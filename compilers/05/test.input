@@ -1,1 +1,3 @@
-(if (zero? (if (zero? 2) 1 0)) 4 5) ;; => 4
+(if (zero? (if (zero? 2) 1 0)) 4 5)
+
+;; CHECK: 4

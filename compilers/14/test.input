@@ -10,4 +10,6 @@
         #f
         (call (fun even?) (sub1 x))))
 
-  (call (fun even?) 101)) ;; => #f
+  (call (fun even?) 101))
+
+;; CHECK: #f

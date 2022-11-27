@@ -10,4 +10,6 @@
         #f
         (even? (sub1 x))))
 
-  (even? 100)) ;; => #t
+  (even? 100))
+
+;; CHECK: #t

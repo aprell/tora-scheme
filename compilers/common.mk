@@ -24,6 +24,10 @@ LDFLAGS += -fsanitize=address,undefined
 %.s: compile.scm %.input
 	./tora $^ > $@
 
+.PHONY: check
+check:
+	for x in $^; do ./$$x | FileCheck $$x.input; done
+
 .PHONY: clean
 clean::
-	rm -f *.s *.o
+	$(RM) *.s *.o

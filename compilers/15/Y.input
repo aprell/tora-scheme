@@ -4,4 +4,6 @@
   (let ((sum (lambda (f)
                (lambda (n)
                  (if (zero? n) 0 (+ n (f (sub1 n))))))))
-    ((Y sum) 10))) ;; => 55
+    ((Y sum) 10)))
+
+;; CHECK: 55

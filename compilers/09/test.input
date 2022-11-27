@@ -2,4 +2,6 @@
   (let ((y (add1 x)))
     (let ((z (add1 y)))
       (let ((z (sub1 z)))
-        z)))) ;; => 8
+        z))))
+
+;; CHECK: 8

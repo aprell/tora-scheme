@@ -1,1 +1,3 @@
-(if (if (zero? (sub1 1)) #f #t) #t #f) ;; => #f
+(if (if (zero? (sub1 1)) #f #t) #t #f)
+
+;; CHECK: #f
