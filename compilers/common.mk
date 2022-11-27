@@ -31,3 +31,5 @@ check:
 .PHONY: clean
 clean::
 	$(RM) *.s *.o
+
+.PHONY: all
