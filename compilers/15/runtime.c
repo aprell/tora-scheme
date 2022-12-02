@@ -13,10 +13,6 @@
 
 #define HEAP_SIZE 1000000
 
-#ifndef GLOBAL
-#define GLOBAL(name) name
-#endif
-
 extern int64_t GLOBAL(entry)(void *);
 static void print(int64_t);
 
