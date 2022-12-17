@@ -68,7 +68,7 @@ local function parse()
 				inc(); ast.depth = table.remove(ast, 2); return mk(ast)
 			end,
 		comment = skip ";" * (1 - P "\n") ^ 0,
-	} / function (ast) return ast:map(expand_macro) end
+	}
 end
 
 local function read(inp)
@@ -233,8 +233,7 @@ eval_list = function (x, env)
 		end
 	else -- Treat as function call
 		if macrocall(x[1]) then
-			raise("eval: unexpanded macro " ..
-			      string.format("'%s'", show(x[1])))
+			return eval(expand_macro(x), env)
 		end
 		-- 1) Evaluate function
 		local fn = eval(x[1], env)
