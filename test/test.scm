@@ -299,7 +299,19 @@
 ;; CHECK: 2+3=5
 ;; CHECK: List of arguments of length 1: (test/test.scm)
 
-;; ------ "FFI" ------
+;; ----- Macros -----
+
+(define-macro (infix a op b) `(,op ,a ,b))
+(print (infix 2 - 1))
+
+;; CHECK: 1
+
+(define-macro (commute a op b) `(infix ,b ,op ,a))
+(print (commute 2 - 1))
+
+;; CHECK: -1
+
+;; ----- "FFI" -----
 
 (define lua "lua () return 1 end")
 (print (lua))
