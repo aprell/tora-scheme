@@ -6,9 +6,6 @@
 (define-macro (or x y)
   `(if ,x ,x ,y))
 
-(define-macro (else x)
-  `(#t ,x)) ; else-clause is always true
-
 (define-macro (when test then)
   `(if ,test ,then))
 

@@ -182,7 +182,7 @@ eval_list = function (x, env)
 			if test_x == "else" and i ~= #x then
 				raise("eval: else must be last cond-clause")
 			end
-			if eval(test_x, env) == true then
+			if test_x == "else" or eval(test_x, env) == true then
 				return eval(then_x, env)
 			end
 		end
