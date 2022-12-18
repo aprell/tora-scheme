@@ -20,13 +20,19 @@ endif
 # Link
 LDFLAGS += -fsanitize=address,undefined
 
+# Check
+FILECHECK := $(shell command -v FileCheck 2> /dev/null)
+ifeq ($(FILECHECK),)
+  FILECHECK := ../filecheck.sh
+endif
+
 .PRECIOUS: %.s
 %.s: compile.scm %.input
 	./tora $^ > $@
 
 .PHONY: check
 check:
-	for x in $^; do ./$$x | FileCheck $$x.input; done
+	for x in $^; do ./$$x | $(FILECHECK) $$x.input; done
 
 .PHONY: clean
 clean::
