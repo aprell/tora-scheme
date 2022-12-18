@@ -1,10 +1,14 @@
 ;; Built-in macros
 
+;; `(abc ,x ,y) is equivalent to (list 'abc x y)
+
 (define-macro (and x y)
-  `(if ,x ,y ,x)) ; equivalent to (list 'if x y x)
+  `(let (($x ,x))
+     (if $x ,y $x)))
 
 (define-macro (or x y)
-  `(if ,x ,x ,y))
+  `(let (($x ,x))
+     (if $x $x ,y)))
 
 (define-macro (when test then)
   `(if ,test ,then))
