@@ -291,6 +291,11 @@ for sym, val in pairs {
 
     ["eval"] = eval,
 
+    ["eval/exn"] = function (exp)
+        local ok, ret = pcall(eval, exp)
+        return not ok and tora_string(tostring(ret)) or ret
+    end,
+
     ["print"] = function (exp)
         io.write(show(exp), "\n")
     end,
