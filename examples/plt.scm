@@ -1,12 +1,12 @@
-;; ---------------------------------------------------------------------------
-;;  Code transcribed from the article
-;;  Programming Language Theory Explained for the Working Programmer:
-;;  Principles of Programming Languages
-;; ---------------------------------------------------------------------------
-;;  https://www.leafac.com/prose/programming-language-theory-explained-for-the-working-programmer--principles-of-programming-languages
-;; ---------------------------------------------------------------------------
+;; +--------------------------------------------------------------------------+
+;; | Code transcribed from                                                    |
+;; |   Programming Language Theory Explained for the Working Programmer:      |
+;; |   Principles of Programming Languages                                    |
+;; +--------------------------------------------------------------------------+
+;; | https://www.leafac.com                                                   |
+;; +--------------------------------------------------------------------------+
 
-(load "src/prelude.scm")
+(load "test/utils.scm")
 
 ;; STARTING POINT
 
@@ -18,7 +18,7 @@
     0
     (+ number (sum-up-to (sub1 number)))))
 
-(assert-equal (sum-up-to 5) 15)
+(test (sum-up-to 5) 15)
 
 ;; NUMBERS
 
@@ -32,25 +32,25 @@
 (define (pretty-print number)
   (number add1 0))
 
-(assert-equal (pretty-print five) 5)
+(test (pretty-print five) 5)
 
 (define (zero? number)
   (let ((always-false
           (lambda (_) #f)))
     (number always-false #t)))
 
-(assert-true (zero? zero))
-(assert-false (zero? one))
-(assert-false (zero? two))
+(test/true  (zero? zero))
+(test/false (zero? one))
+(test/false (zero? two))
 
 ;; Don't redefine '+' because add1 relies on it
 (define (plus number-left number-right)
   (lambda (fun arg)
     (number-left fun (number-right fun arg))))
 
-(assert-equal (pretty-print (plus zero zero)) 0)
-(assert-equal (pretty-print (plus zero one)) 1)
-(assert-equal (pretty-print (plus one two)) 3)
+(test (pretty-print (plus zero zero)) 0)
+(test (pretty-print (plus zero one)) 1)
+(test (pretty-print (plus one two)) 3)
 
 (define (sub1 number)
   (letrec ((initial-pair
@@ -63,16 +63,16 @@
              (number slide-pair initial-pair)))
     (car final-pair)))
 
-(assert-equal (pretty-print (sub1 one)) 0)
-(assert-equal (pretty-print (sub1 two)) 1)
-(assert-equal (pretty-print (sub1 three)) 2)
+(test (pretty-print (sub1 one)) 0)
+(test (pretty-print (sub1 two)) 1)
+(test (pretty-print (sub1 three)) 2)
 
 (define (sum-up-to number)
   (if (zero? number)
     zero
     (plus number (sum-up-to (sub1 number)))))
 
-(assert-equal (pretty-print (sum-up-to five)) 15)
+(test (pretty-print (sum-up-to five)) 15)
 
 ;; BOOLEANS
 
@@ -84,15 +84,15 @@
           (lambda (_) false)))
     (number always-false true)))
 
-(define (if_ test then els)
-  (test then els))
+(define (if_ test_ then_ else_)
+  (test_ then_ else_))
 
 (define (sum-up-to number)
   (if_ (zero? number)
     (lambda () zero)
     (lambda () (plus number (sum-up-to (sub1 number))))))
 
-(assert-equal (pretty-print (sum-up-to five)) 15)
+(test (pretty-print (sum-up-to five)) 15)
 
 ;; PAIRS
 
@@ -102,8 +102,8 @@
 (define stored-5 (store five))
 (define stored-1 (store one))
 
-(assert-equal (pretty-print (stored-5)) 5)
-(assert-equal (pretty-print (stored-1)) 1)
+(test (pretty-print (stored-5)) 5)
+(test (pretty-print (stored-1)) 1)
 
 (define (pair left right)
   (lambda (selector)
@@ -119,8 +119,8 @@
           (lambda (left right) right)))
     (pair select-right)))
 
-(assert-equal (pretty-print (pair-left (pair two three))) 2)
-(assert-equal (pretty-print (pair-right (pair two three))) 3)
+(test (pretty-print (pair-left (pair two three))) 2)
+(test (pretty-print (pair-right (pair two three))) 3)
 
 (define (sub1 number)
   (letrec ((initial-pair
@@ -133,7 +133,7 @@
              (number slide-pair initial-pair)))
     (pair-left final-pair)))
 
-(assert-equal (pretty-print (sum-up-to five)) 15)
+(test (pretty-print (sum-up-to five)) 15)
 
 ;; RECURSION
 
@@ -146,7 +146,7 @@
 
 (set! sum-up-to/rest sum-up-to)
 
-(assert-equal (pretty-print (sum-up-to five)) 15)
+(test (pretty-print (sum-up-to five)) 15)
 
 (define (sum-up-to number)
   (let ((sum-up-to/partial
@@ -156,7 +156,7 @@
                  (lambda () (plus number (sum-up-to/rest sum-up-to/rest (sub1 number))))))))
     (sum-up-to/partial sum-up-to/partial number)))
 
-(assert-equal (pretty-print (sum-up-to five)) 15)
+(test (pretty-print (sum-up-to five)) 15)
 
 ;; FUNCTIONS WITH MULTIPLE ARGUMENTS
 
@@ -185,14 +185,14 @@
           (lambda (_) false)))
     ((number always-false) true)))
 
-(define (if_ test)
-  (lambda (then)
-    (lambda (els)
-      ((test then) els))))
+(define (if_ test_)
+  (lambda (then_)
+    (lambda (else_)
+      ((test_ then_) else_))))
 
-(assert-equal (pretty-print ((plus zero) zero)) 0)
-(assert-equal (pretty-print ((plus zero) one)) 1)
-(assert-equal (pretty-print ((plus one) two)) 3)
+(test (pretty-print ((plus zero) zero)) 0)
+(test (pretty-print ((plus zero) one)) 1)
+(test (pretty-print ((plus one) two)) 3)
 
 (define (pair left)
   (lambda (right)
@@ -211,8 +211,8 @@
             (lambda (right) right))))
     (pair select-right)))
 
-(assert-equal (pretty-print (pair-left ((pair two) three))) 2)
-(assert-equal (pretty-print (pair-right ((pair two) three))) 3)
+(test (pretty-print (pair-left ((pair two) three))) 2)
+(test (pretty-print (pair-right ((pair two) three))) 3)
 
 (define (sub1 number)
   (letrec ((initial-pair
@@ -225,9 +225,9 @@
              ((number slide-pair) initial-pair)))
     (pair-left final-pair)))
 
-(assert-equal (pretty-print (sub1 one)) 0)
-(assert-equal (pretty-print (sub1 two)) 1)
-(assert-equal (pretty-print (sub1 three)) 2)
+(test (pretty-print (sub1 one)) 0)
+(test (pretty-print (sub1 two)) 1)
+(test (pretty-print (sub1 three)) 2)
 
 (define (sum-up-to number)
   (let ((sum-up-to/partial
@@ -238,6 +238,6 @@
                    (lambda () ((plus number) ((sum-up-to/rest sum-up-to/rest) (sub1 number)))))))))
     ((sum-up-to/partial sum-up-to/partial) number)))
 
-(assert-equal (pretty-print (sum-up-to five)) 15)
+(test (pretty-print (sum-up-to five)) 15)
 
-(print "All tests passed")
+(test/result)

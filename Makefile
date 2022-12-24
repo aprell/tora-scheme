@@ -1,4 +1,11 @@
+TESTS := \
+  test/test.scm \
+  examples/plt.scm
+
 test:
-	@./tora test/test.scm
+	@for test in $(TESTS); do \
+	    printf "%-22s" $$test:; \
+	    ./tora $$test; \
+	done
 
 .PHONY: test
