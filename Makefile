@@ -1,5 +1,6 @@
 TESTS := \
   test/test.scm \
+  examples/plai3.scm \
   examples/plt.scm
 
 test:
