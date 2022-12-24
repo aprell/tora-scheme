@@ -1,5 +1,4 @@
 test:
-	@echo "Running expect tests"
-	@test/expect.sh
+	@./tora test/test.scm
 
 .PHONY: test
