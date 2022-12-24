@@ -46,15 +46,10 @@
               ,body
               (set! ,i (+ ,i 1))))))
 
-(define-macro (assert-equal a b)
-  `(if (not (equal? ,a ,b))
-    (let (($msg (string-append
-                 "Assertion failed: "
-                 ,(show a) " != " ,(show b) " <=> " ,a " != " ,b)))
+(define-macro (assert e)
+  `(if (not (equal? ,e #t))
+    (let (($msg (string-append "Assertion failed: " ,(show e) " is false")))
       (error $msg))))
 
-(define-macro (assert-true a)
-  `(assert-equal ,a #t))
-
-(define-macro (assert-false a)
-  `(assert-equal ,a #f))
+(define-macro (assert-equal a b)
+  `(assert (equal? ,a ,b)))
