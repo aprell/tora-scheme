@@ -39,17 +39,26 @@ local function parse()
         atom = number + string + boolean + operator + symbol,
         list = Ct (skip "(" * (V "sexpr" * space ^ 0 + V "comment") ^ 0 * skip ")") /
             function (ast)
-                if ast[1] == "define" or ast[1] == "define-macro" then
-                    if type(ast[2]) == "table" then
-                        -- Desugar: (define (f a b) (...))
-                        ----------> (define f (lambda (a b) (...)))
-                        local lambda = mk {"lambda", ast[2], ast[3]}
-                        ast[2] = table.remove(ast[2], 1)
-                        ast[3] = lambda
-                    end
-                elseif ast[1] == "lambda" or ast[1] == "λ" then
-                    if type(ast[2]) ~= "table" then
-                        raise "parse: lambda expects a parameter list"
+                if (type(ast[1]) == "string") then
+                    if ast[1] == "define" or ast[1] == "define-macro" then
+                        if type(ast[2]) == "table" then
+                            -- Desugar: (define (f a b) (...))
+                            ----------> (define f (lambda (a b) (...)))
+                            local lambda = mk {"lambda", ast[2], ast[3]}
+                            ast[2] = table.remove(ast[2], 1)
+                            ast[3] = lambda
+                        end
+                    elseif ast[1] == "lambda" or ast[1] == "λ" then
+                        if type(ast[2]) ~= "table" then
+                            raise "parse: lambda expects a parameter list"
+                        end
+                    elseif (S "+-*/"):match(ast[1]) then
+                        while #ast > 3 do
+                            -- Desugar: (op 1 2 3 ...)
+                            ----------> (op (op 1 2) 3 ...)
+                            ast[2] = mk {ast[1], ast[2], ast[3]}
+                            table.remove(ast, 3)
+                        end
                     end
                 end
                 return mk(ast)

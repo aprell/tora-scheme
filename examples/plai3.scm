@@ -130,9 +130,7 @@
       (set! self
         (lambda (m)
           (switch m
-            (('sum (lambda () (+ v
-                                 (+ ((l 'sum))
-                                    ((r 'sum))))))))))
+            (('sum (lambda () (+ v ((l 'sum)) ((r 'sum)))))))))
       self)))
 
 (define a-tree
@@ -162,9 +160,7 @@
       (set! self
         (lambda (m)
           (switch m
-            (('size (lambda () (+ 1
-                                  (+ ((l 'size))
-                                     ((r 'size))))))
+            (('size (lambda () (+ 1 ((l 'size)) ((r 'size)))))
              (default (parent m))))))
       self)))
 
